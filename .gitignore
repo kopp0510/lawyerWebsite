@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+scraped/
+test-preview.js
+test-modal.js
+scrape.js
+scrape-all.js
+preview-*.png
+modal-*.png
