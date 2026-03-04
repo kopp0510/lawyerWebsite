@@ -1,0 +1,9 @@
+圖片下載記錄
+========================================
+
+image_001.jpg <- https://static.wixstatic.com/media/11062b_9531c9b2291442e59f7dee171b56e36a~mv2.jpg/v1/fill/w_1140,h_525,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_9531c9b2291442e59f7dee171b56e36a~mv2.jpg
+image_002.jpg <- https://static.wixstatic.com/media/11062b_b53bfa02d7114683a8de7a3c4fb446a5~mv2.jpg/v1/fill/w_1140,h_525,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_b53bfa02d7114683a8de7a3c4fb446a5~mv2.jpg
+image_003.jpg <- https://static.wixstatic.com/media/11062b_b060de5920494e6a8afc76d13ed4f5fc~mv2.jpg/v1/crop/x_674,y_0,w_3652,h_3335/fill/w_378,h_345,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/%E7%9A%AE%E5%A5%97.jpg
+image_004.jpg <- https://static.wixstatic.com/media/11062b_555e5dc7a3594eeaaab9842e7a40966b~mv2_d_5120_1227_s_2.jpg/v1/crop/x_2712,y_0,w_1344,h_1227/fill/w_378,h_345,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/%E8%BE%A6%E5%85%AC%E6%A1%8C.jpg
+image_005.jpg <- https://static.wixstatic.com/media/62f26520e99441c6804b83aaf5423953.jpg/v1/crop/x_580,y_0,w_3140,h_2867/fill/w_378,h_345,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/%E6%91%A9%E5%A4%A9%E5%A4%A7%E6%A8%93.jpg
+image_006.jpg <- https://static.wixstatic.com/media/11062b_4faab67083504464881ee5eb685a7c85~mv2.jpg/v1/crop/x_675,y_0,w_3650,h_3333/fill/w_378,h_345,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/%E4%B8%8D%E5%90%8C%E7%9A%84%E5%9C%96%E6%A8%99.jpg
