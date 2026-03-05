@@ -35,7 +35,11 @@
   --font-serif: "Noto Serif TC", Georgia, serif;
 }
 
-html { scroll-behavior: smooth; font-size: 16px; }
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  overscroll-behavior: none;
+}
 
 body {
   font-family: var(--font-sans);
@@ -45,6 +49,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 img { max-width: 100%; height: auto; display: block; }
@@ -99,6 +104,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: rgba(255,255,255,0);
   backdrop-filter: blur(0px);
   transition: all 0.4s ease;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 .navbar.scrolled {
   background: rgba(255,255,255,0.96);
@@ -1003,31 +1010,44 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .hamburger { display: flex; }
   .nav-links {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background: rgba(17,17,24,0.97);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     flex-direction: column;
-    padding: 100px 32px 40px;
+    justify-content: center;
+    align-items: center;
+    padding: 0 32px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 0;
     opacity: 0;
     visibility: hidden;
     transition: all 0.35s ease;
+    z-index: 999;
   }
   .nav-links.open { opacity: 1; visibility: visible; }
   .nav-links a {
     display: block;
+    width: 100%;
+    max-width: 320px;
     padding: 16px 0;
     font-size: 1.05rem;
     color: rgba(255,255,255,0.7) !important;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     letter-spacing: 2px;
+    text-align: center;
   }
   .nav-links a:hover { color: #fff !important; }
   .nav-links a::after { display: none; }
   .hamburger.active span { background: #fff !important; }
 
   /* Hero */
-  .hero { min-height: 100svh; }
+  .hero { height: 100dvh; min-height: 100dvh; }
   .hero-content h1 { font-size: 2.2rem; letter-spacing: 6px; }
   .hero-content .tagline { font-size: 0.8rem; letter-spacing: 3px; }
   .hero-scroll { display: none; }
