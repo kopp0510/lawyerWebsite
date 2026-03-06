@@ -6,3 +6,5 @@ scrape.js
 scrape-all.js
 preview-*.png
 modal-*.png
+.env
+backend/.env

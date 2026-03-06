@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model SectionContent {
+  id        Int      @id @default(autoincrement())
+  section   String   @unique
+  content   Json
+  updatedAt DateTime @updatedAt
+}
+
+model Case {
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String
+  desc      String
+  imageId   Int?
+  image     Image?   @relation(fields: [imageId], references: [id])
+  sortOrder Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id                   Int @id @default(1)
+  carouselDisplayCount Int @default(9)
+}
+
+model Image {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  mimeType  String
+  data      Bytes
+  createdAt DateTime @default(now())
+  cases     Case[]
+}

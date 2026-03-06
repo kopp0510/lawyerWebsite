@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後台管理 — 劉鈞豪律師事務所</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <!-- 登入頁面 -->
+  <div id="login-page" class="login-page">
+    <div class="login-card">
+      <h1>後台管理系統</h1>
+      <p>劉鈞豪律師事務所</p>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" required autocomplete="email">
+        <input type="password" id="login-password" placeholder="密碼" required autocomplete="current-password">
+        <button type="submit">登入</button>
+        <p id="login-error" class="error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 管理介面 -->
+  <div id="admin-page" class="admin-page" style="display:none;">
+    <header class="admin-header">
+      <h1>後台管理</h1>
+      <div>
+        <span id="admin-email"></span>
+        <button id="logout-btn" class="btn-sm">登出</button>
+      </div>
+    </header>
+
+    <nav class="admin-tabs">
+      <button class="tab active" data-tab="hero">Hero</button>
+      <button class="tab" data-tab="about">關於律師</button>
+      <button class="tab" data-tab="services">服務項目</button>
+      <button class="tab" data-tab="cases">案例分享</button>
+      <button class="tab" data-tab="pricing">收費標準</button>
+      <button class="tab" data-tab="news">律師動態</button>
+      <button class="tab" data-tab="contact">聯絡律師</button>
+      <button class="tab" data-tab="footer">Footer</button>
+    </nav>
+
+    <main class="admin-content">
+      <!-- Hero Tab -->
+      <div class="tab-panel active" id="panel-hero">
+        <h2>Hero 區塊</h2>
+        <div class="form-group">
+          <label>標題</label>
+          <input type="text" id="hero-title">
+        </div>
+        <div class="form-group">
+          <label>副標語</label>
+          <input type="text" id="hero-tagline">
+        </div>
+        <div class="form-group">
+          <label>標籤文字</label>
+          <input type="text" id="hero-label">
+        </div>
+        <div class="form-group">
+          <label>CTA 按鈕文字</label>
+          <input type="text" id="hero-ctaText">
+        </div>
+        <div class="form-group">
+          <label>背景圖片</label>
+          <div class="image-upload" data-target="hero-bgImageId">
+            <img id="hero-bg-preview" class="img-preview" src="" alt="">
+            <input type="file" accept="image/*" class="file-input">
+            <button type="button" class="btn-sm btn-upload">選擇圖片</button>
+          </div>
+          <input type="hidden" id="hero-bgImageId">
+        </div>
+        <button class="btn-save" data-section="hero">儲存</button>
+      </div>
+
+      <!-- About Tab -->
+      <div class="tab-panel" id="panel-about">
+        <h2>關於律師</h2>
+        <div class="form-group">
+          <label>姓名</label>
+          <input type="text" id="about-name">
+        </div>
+        <div class="form-group">
+          <label>職稱</label>
+          <input type="text" id="about-position">
+        </div>
+        <div class="form-group">
+          <label>照片</label>
+          <div class="image-upload" data-target="about-photoImageId">
+            <img id="about-photo-preview" class="img-preview" src="" alt="">
+            <input type="file" accept="image/*" class="file-input">
+            <button type="button" class="btn-sm btn-upload">選擇圖片</button>
+          </div>
+          <input type="hidden" id="about-photoImageId">
+        </div>
+        <div class="form-group">
+          <label>簡介段落</label>
+          <div id="about-paragraphs" class="dynamic-list"></div>
+          <button type="button" class="btn-sm btn-add" data-list="about-paragraphs" data-type="textarea">+ 新增段落</button>
+        </div>
+        <div class="form-group">
+          <label>專業標籤</label>
+          <div id="about-tags" class="dynamic-list"></div>
+          <button type="button" class="btn-sm btn-add" data-list="about-tags" data-type="input">+ 新增標籤</button>
+        </div>
+        <div class="form-group">
+          <label>學歷</label>
+          <div id="about-education" class="dynamic-list"></div>
+          <button type="button" class="btn-sm btn-add" data-list="about-education" data-type="input">+ 新增學歷</button>
+        </div>
+        <div class="form-group">
+          <label>經歷</label>
+          <div id="about-experience" class="dynamic-list"></div>
+          <button type="button" class="btn-sm btn-add" data-list="about-experience" data-type="input">+ 新增經歷</button>
+        </div>
+        <button class="btn-save" data-section="about">儲存</button>
+      </div>
+
+      <!-- Services Tab -->
+      <div class="tab-panel" id="panel-services">
+        <h2>服務項目</h2>
+        <div id="services-cards" class="card-list"></div>
+        <button type="button" class="btn-sm btn-add" id="add-service-card">+ 新增服務卡片</button>
+        <button class="btn-save" data-section="services">儲存</button>
+      </div>
+
+      <!-- Cases Tab -->
+      <div class="tab-panel" id="panel-cases">
+        <h2>案例分享</h2>
+        <div class="form-group">
+          <label>首頁輪播顯示數量</label>
+          <input type="number" id="carousel-display-count" min="1" max="100" value="9">
+          <button type="button" class="btn-sm" id="save-settings">儲存設定</button>
+        </div>
+        <hr>
+        <h3>案例列表</h3>
+        <div id="cases-list" class="card-list"></div>
+        <button type="button" class="btn-sm btn-add" id="add-case">+ 新增案例</button>
+      </div>
+
+      <!-- Pricing Tab -->
+      <div class="tab-panel" id="panel-pricing">
+        <h2>收費標準</h2>
+        <h3>費用表格</h3>
+        <div id="pricing-table-rows" class="card-list"></div>
+        <button type="button" class="btn-sm btn-add" id="add-pricing-row">+ 新增費用項目</button>
+        <hr>
+        <div class="form-group">
+          <label>方案區標題</label>
+          <input type="text" id="pricing-plansTitle">
+        </div>
+        <div class="form-group">
+          <label>方案區副標題</label>
+          <input type="text" id="pricing-plansSubtitle">
+        </div>
+        <h3>顧問方案</h3>
+        <div id="pricing-plans" class="card-list"></div>
+        <button type="button" class="btn-sm btn-add" id="add-pricing-plan">+ 新增方案</button>
+        <div class="form-group">
+          <label>備註文字</label>
+          <input type="text" id="pricing-note">
+        </div>
+        <button class="btn-save" data-section="pricing">儲存</button>
+      </div>
+
+      <!-- News Tab -->
+      <div class="tab-panel" id="panel-news">
+        <h2>律師動態</h2>
+        <div class="form-group">
+          <label>照片</label>
+          <div class="image-upload" data-target="news-photoImageId">
+            <img id="news-photo-preview" class="img-preview" src="" alt="">
+            <input type="file" accept="image/*" class="file-input">
+            <button type="button" class="btn-sm btn-upload">選擇圖片</button>
+          </div>
+          <input type="hidden" id="news-photoImageId">
+        </div>
+        <div class="form-group">
+          <label>標題</label>
+          <input type="text" id="news-title">
+        </div>
+        <div class="form-group">
+          <label>職務榮譽列表</label>
+          <div id="news-items" class="dynamic-list"></div>
+          <button type="button" class="btn-sm btn-add" data-list="news-items" data-type="input">+ 新增項目</button>
+        </div>
+        <div class="form-group">
+          <label>社群連結</label>
+          <div class="inline-fields">
+            <input type="text" id="news-linkedin" placeholder="LinkedIn URL">
+            <input type="text" id="news-instagram" placeholder="Instagram URL">
+            <input type="text" id="news-line" placeholder="LINE URL">
+            <input type="text" id="news-facebook" placeholder="Facebook URL">
+          </div>
+        </div>
+        <button class="btn-save" data-section="news">儲存</button>
+      </div>
+
+      <!-- Contact Tab -->
+      <div class="tab-panel" id="panel-contact">
+        <h2>聯絡律師</h2>
+        <div class="form-group">
+          <label>地址</label>
+          <input type="text" id="contact-address">
+        </div>
+        <div class="form-group">
+          <label>電話</label>
+          <input type="text" id="contact-phone">
+        </div>
+        <div class="form-group">
+          <label>信箱</label>
+          <input type="text" id="contact-email">
+        </div>
+        <div class="form-group">
+          <label>Google Maps Embed URL</label>
+          <input type="text" id="contact-mapUrl">
+        </div>
+        <button class="btn-save" data-section="contact">儲存</button>
+      </div>
+
+      <!-- Footer Tab -->
+      <div class="tab-panel" id="panel-footer">
+        <h2>Footer</h2>
+        <div class="form-group">
+          <label>事務所名稱</label>
+          <input type="text" id="footer-firmName">
+        </div>
+        <div class="form-group">
+          <label>Since</label>
+          <input type="text" id="footer-since">
+        </div>
+        <div class="form-group">
+          <label>地址</label>
+          <input type="text" id="footer-address">
+        </div>
+        <div class="form-group">
+          <label>電話</label>
+          <input type="text" id="footer-phone">
+        </div>
+        <div class="form-group">
+          <label>版權文字</label>
+          <input type="text" id="footer-copyright">
+        </div>
+        <div class="form-group">
+          <label>相關機構連結</label>
+          <div id="footer-institutions" class="card-list"></div>
+          <button type="button" class="btn-sm btn-add" id="add-footer-institution">+ 新增機構</button>
+        </div>
+        <button class="btn-save" data-section="footer">儲存</button>
+      </div>
+    </main>
+
+    <!-- Toast 通知 -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
