@@ -50,10 +50,22 @@ async function loadContent() {
 }
 
 function getImageSrc(item) {
-  if (item.imageId) return `${API_BASE}/api/images/${item.imageId}`;
-  if (item.image && item.image.id) return `${API_BASE}/api/images/${item.image.id}`;
-  if (item.img) return item.img;
-  return '';
+  const id = item.imageId || item.image?.id;
+  if (id) return `${API_BASE}/api/images/${id}`;
+  return item.img || '';
+}
+
+// 解析社群連結值（相容字串或物件格式）
+function parseSocialValue(v) {
+  if (typeof v === 'string') return { url: v, iconId: null };
+  return { url: v?.url || '', iconId: v?.iconId || null };
+}
+
+// 設定圖片元素的 src（依 imageId 或 fallback 路徑）
+function setImageSrc(imgEl, imageId, fallbackPath) {
+  if (!imgEl) return;
+  if (imageId) imgEl.src = `${API_BASE}/api/images/${imageId}`;
+  else if (fallbackPath) imgEl.src = fallbackPath;
 }
 
 function renderHero(data) {
@@ -79,11 +91,7 @@ function renderAbout(data) {
   if (!data) return;
   const section = document.querySelector('#about');
   if (!section) return;
-  const img = section.querySelector('.about-photo img');
-  if (img) {
-    if (data.photoImageId) img.src = `${API_BASE}/api/images/${data.photoImageId}`;
-    else if (data.photo) img.src = data.photo;
-  }
+  setImageSrc(section.querySelector('.about-photo img'), data.photoImageId, data.photo);
   const name = section.querySelector('.about-name');
   if (name) name.textContent = data.name || '';
   const posEl = section.querySelector('.about-position');
@@ -186,11 +194,7 @@ function renderNews(data) {
   if (!data) return;
   const section = document.querySelector('#news');
   if (!section) return;
-  const img = section.querySelector('.news-photo img');
-  if (img) {
-    if (data.photoImageId) img.src = `${API_BASE}/api/images/${data.photoImageId}`;
-    else if (data.photo) img.src = data.photo;
-  }
+  setImageSrc(section.querySelector('.news-photo img'), data.photoImageId, data.photo);
   const title = section.querySelector('.news-content h3');
   if (title) title.textContent = data.title || '';
   const list = section.querySelector('.news-list');
@@ -201,17 +205,13 @@ function renderNews(data) {
   if (social && data.socialLinks) {
     const labels = { linkedin: 'in', instagram: 'ig', line: 'Li', facebook: 'fb' };
     social.innerHTML = Object.entries(data.socialLinks)
-      .filter(([k, v]) => {
-        const url = typeof v === 'string' ? v : v?.url;
-        return url && url !== '#' && url.trim() !== '';
-      })
-      .map(([k, v]) => {
-        const url = typeof v === 'string' ? v : v?.url;
-        const iconId = typeof v === 'object' ? v?.iconId : null;
+      .map(([k, v]) => ({ key: k, ...parseSocialValue(v) }))
+      .filter(({ url }) => url && url !== '#' && url.trim() !== '')
+      .map(({ key, url, iconId }) => {
         const inner = iconId
-          ? `<img src="${API_BASE}/api/images/${iconId}" alt="${k}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-          : (labels[k] || k);
-        return `<a href="${url}" aria-label="${k}" target="_blank">${inner}</a>`;
+          ? `<img src="${API_BASE}/api/images/${iconId}" alt="${key}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+          : (labels[key] || key);
+        return `<a href="${url}" aria-label="${key}" target="_blank">${inner}</a>`;
       })
       .join('');
   }
@@ -289,7 +289,10 @@ function initCarousel() {
     dotsContainer?.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === current));
   }
 
-  function auto() { clearInterval(timer); timer = setInterval(() => goTo(current + 1), 5000); }
+  function auto() {
+    clearInterval(timer);
+    timer = setInterval(() => goTo(current + 1), 5000);
+  }
 
   buildDots();
   if (prevBtn) prevBtn.addEventListener('click', () => { goTo(current - 1); auto(); });
@@ -304,8 +307,13 @@ function initCarousel() {
   });
 
   window.addEventListener('resize', () => {
-    const nv = getPerView();
-    if (nv !== perView) { perView = nv; pages = Math.ceil(slides.length / perView); current = 0; goTo(0); buildDots(); }
+    const newPerView = getPerView();
+    if (newPerView === perView) return;
+    perView = newPerView;
+    pages = Math.ceil(slides.length / perView);
+    current = 0;
+    goTo(0);
+    buildDots();
   });
 
   const cw = document.querySelector('.carousel-wrapper');
@@ -398,6 +406,42 @@ document.addEventListener('DOMContentLoaded', () => {
       if (t) { e.preventDefault(); window.scrollTo({ top: t.offsetTop - 76, behavior: 'smooth' }); }
     });
   });
+
+  // 聯絡表單送出
+  const contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = contactForm.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '送出中...';
+      try {
+        const body = {
+          name: contactForm.querySelector('[name="name"]').value,
+          email: contactForm.querySelector('[name="email"]').value,
+          phone: contactForm.querySelector('[name="phone"]').value,
+          message: contactForm.querySelector('[name="message"]').value,
+        };
+        const res = await fetch(`${API_BASE}/api/contact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          contactForm.reset();
+          alert('感謝您的留言，我們將盡快回覆！');
+        } else {
+          const data = await res.json();
+          alert(data.error || '送出失敗，請稍後再試');
+        }
+      } catch {
+        alert('送出失敗，請檢查網路連線');
+      }
+      btn.disabled = false;
+      btn.textContent = originalText;
+    });
+  }
 
   // 載入 API 內容
   loadContent();

@@ -46,3 +46,15 @@ model Image {
   createdAt DateTime @default(now())
   cases     Case[]
 }
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String   @default("")
+  message   String
+  ip        String   @default("")
+  isRead    Boolean  @default(false)
+  isBlocked Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

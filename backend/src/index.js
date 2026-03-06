@@ -6,11 +6,13 @@ const authRoutes = require('./routes/auth');
 const contentRoutes = require('./routes/content');
 const casesRoutes = require('./routes/cases');
 const imagesRoutes = require('./routes/images');
+const contactRoutes = require('./routes/contact');
 const authMiddleware = require('./middleware/auth');
 
 const app = express();
 const prisma = new PrismaClient();
 
+app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
@@ -19,6 +21,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/cases', casesRoutes);
 app.use('/api/images', imagesRoutes);
+app.use('/api/contact', contactRoutes);
 
 // 全站設定
 app.get('/api/settings', async (req, res) => {

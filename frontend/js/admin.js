@@ -24,6 +24,24 @@ function toast(msg, type = 'success') {
   setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+// 設定圖片預覽（依 imageId 或 fallback 路徑）
+function setImagePreview(previewId, hiddenId, imageId, fallbackPath) {
+  if (imageId) {
+    document.getElementById(hiddenId).value = imageId;
+    document.getElementById(previewId).src = `${API_BASE}/api/images/${imageId}`;
+  } else if (fallbackPath) {
+    document.getElementById(previewId).src = fallbackPath;
+  }
+}
+
+// 收集社群連結資料
+function collectSocialLink(platform) {
+  return {
+    url: document.getElementById(`news-${platform}`).value,
+    iconId: parseInt(document.getElementById(`news-${platform}-icon-id`).value) || null,
+  };
+}
+
 // ===== 登入/登出 =====
 function checkAuth() {
   if (token) {
@@ -67,6 +85,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+    if (tab.dataset.tab === 'messages') loadMessages();
   });
 });
 
@@ -95,6 +114,7 @@ async function loadAllData() {
     const settings = await settingsRes.json();
     document.getElementById('carousel-display-count').value = settings.carouselDisplayCount;
   }
+  loadMessages();
 }
 
 // ===== Hero =====
@@ -104,12 +124,7 @@ function fillHero(data) {
   document.getElementById('hero-tagline').value = data.tagline || '';
   document.getElementById('hero-label').value = data.label || '';
   document.getElementById('hero-ctaText').value = data.ctaText || '';
-  if (data.bgImageId) {
-    document.getElementById('hero-bgImageId').value = data.bgImageId;
-    document.getElementById('hero-bg-preview').src = `${API_BASE}/api/images/${data.bgImageId}`;
-  } else if (data.bgImage) {
-    document.getElementById('hero-bg-preview').src = data.bgImage;
-  }
+  setImagePreview('hero-bg-preview', 'hero-bgImageId', data.bgImageId, data.bgImage);
 }
 
 function collectHero() {
@@ -128,12 +143,7 @@ function fillAbout(data) {
   if (!data) return;
   document.getElementById('about-name').value = data.name || '';
   document.getElementById('about-position').value = data.position || '';
-  if (data.photoImageId) {
-    document.getElementById('about-photoImageId').value = data.photoImageId;
-    document.getElementById('about-photo-preview').src = `${API_BASE}/api/images/${data.photoImageId}`;
-  } else if (data.photo) {
-    document.getElementById('about-photo-preview').src = data.photo;
-  }
+  setImagePreview('about-photo-preview', 'about-photoImageId', data.photoImageId, data.photo);
   fillDynamicList('about-paragraphs', data.paragraphs || [], 'textarea');
   fillDynamicList('about-tags', data.tags || [], 'input');
   fillDynamicList('about-education', data.education || [], 'input');
@@ -158,7 +168,7 @@ function fillServices(data) {
   if (!data || !data.cards) return;
   const container = document.getElementById('services-cards');
   container.innerHTML = '';
-  data.cards.forEach((card, i) => addServiceCard(card));
+  data.cards.forEach(card => addServiceCard(card));
 }
 
 function addServiceCard(card = { icon: '', title: '', desc: '' }) {
@@ -293,26 +303,19 @@ function collectPricing() {
 function fillNews(data) {
   if (!data) return;
   document.getElementById('news-title').value = data.title || '';
-  if (data.photoImageId) {
-    document.getElementById('news-photoImageId').value = data.photoImageId;
-    document.getElementById('news-photo-preview').src = `${API_BASE}/api/images/${data.photoImageId}`;
-  } else if (data.photo) {
-    document.getElementById('news-photo-preview').src = data.photo;
-  }
+  setImagePreview('news-photo-preview', 'news-photoImageId', data.photoImageId, data.photo);
   fillDynamicList('news-items', data.items || [], 'input');
   if (data.socialLinks) {
-    const platforms = ['linkedin', 'instagram', 'line', 'facebook'];
-    platforms.forEach(p => {
+    ['linkedin', 'instagram', 'line', 'facebook'].forEach(p => {
       const val = data.socialLinks[p];
       const url = typeof val === 'string' ? val : val?.url || '';
       const iconId = typeof val === 'object' ? val?.iconId : null;
       document.getElementById(`news-${p}`).value = url;
-      if (iconId) {
-        document.getElementById(`news-${p}-icon-id`).value = iconId;
-        const preview = document.getElementById(`news-${p}-icon-preview`);
-        preview.src = `${API_BASE}/api/images/${iconId}`;
-        preview.style.display = 'block';
-      }
+      if (!iconId) return;
+      document.getElementById(`news-${p}-icon-id`).value = iconId;
+      const preview = document.getElementById(`news-${p}-icon-preview`);
+      preview.src = `${API_BASE}/api/images/${iconId}`;
+      preview.style.display = 'block';
     });
   }
 }
@@ -324,10 +327,10 @@ function collectNews() {
     photoImageId: parseInt(document.getElementById('news-photoImageId').value) || null,
     items: collectDynamicList('news-items'),
     socialLinks: {
-      linkedin: { url: document.getElementById('news-linkedin').value, iconId: parseInt(document.getElementById('news-linkedin-icon-id').value) || null },
-      instagram: { url: document.getElementById('news-instagram').value, iconId: parseInt(document.getElementById('news-instagram-icon-id').value) || null },
-      line: { url: document.getElementById('news-line').value, iconId: parseInt(document.getElementById('news-line-icon-id').value) || null },
-      facebook: { url: document.getElementById('news-facebook').value, iconId: parseInt(document.getElementById('news-facebook-icon-id').value) || null },
+      linkedin: collectSocialLink('linkedin'),
+      instagram: collectSocialLink('instagram'),
+      line: collectSocialLink('line'),
+      facebook: collectSocialLink('facebook'),
     },
   };
 }
@@ -352,6 +355,63 @@ function collectContact() {
     email: document.getElementById('contact-email').value,
     mapUrl: document.getElementById('contact-mapUrl').value,
   };
+}
+
+// ===== 客戶留言 =====
+function renderBadge(text, bgColor) {
+  return `<span style="background:${bgColor};color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;">${text}</span>`;
+}
+
+function renderMessageCard(m) {
+  const time = new Date(m.createdAt).toLocaleString('zh-TW');
+  const readBadge = m.isRead
+    ? '<span style="color:#999;font-size:0.8em;">已讀</span>'
+    : renderBadge('未讀', '#e74c3c');
+  const blockedBadge = m.isBlocked ? ' ' + renderBadge('已阻擋', '#c0392b') : '';
+  const borderStyle = m.isBlocked ? 'border-left:4px solid #e74c3c;' : '';
+  return `
+    <div class="card-item" style="${borderStyle}">
+      <div class="card-header">
+        <strong>${m.name}</strong>
+        <div>${readBadge}${blockedBadge}</div>
+      </div>
+      <div class="card-fields" style="font-size:0.9em;">
+        <div><span style="color:var(--text-light);">時間：</span>${time}</div>
+        <div><span style="color:var(--text-light);">IP：</span>${m.ip || '未知'}</div>
+        <div><span style="color:var(--text-light);">Email：</span>${m.email}</div>
+        ${m.phone ? `<div><span style="color:var(--text-light);">電話：</span>${m.phone}</div>` : ''}
+        <div style="margin-top:6px;white-space:pre-wrap;">${m.message}</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        ${!m.isRead ? `<button class="btn-sm" onclick="markMessageRead(${m.id})">標記已讀</button>` : ''}
+        <button class="btn-sm btn-danger" onclick="deleteMessage(${m.id})">刪除</button>
+      </div>
+    </div>
+  `;
+}
+
+async function loadMessages() {
+  const container = document.getElementById('messages-list');
+  if (!container) return;
+  const res = await api('/api/contact');
+  if (!res.ok) { container.innerHTML = '<p>載入留言失敗</p>'; return; }
+  const messages = await res.json();
+  document.getElementById('messages-total-count').textContent = `（共 ${messages.length} 筆留言）`;
+  if (!messages.length) { container.innerHTML = '<p style="color:var(--text-light);">目前沒有客戶留言</p>'; return; }
+  container.innerHTML = messages.map(renderMessageCard).join('');
+}
+
+async function markMessageRead(id) {
+  const res = await api(`/api/contact/${id}/read`, { method: 'PUT' });
+  if (res.ok) { toast('已標記為已讀'); loadMessages(); }
+  else toast('操作失敗', 'error');
+}
+
+async function deleteMessage(id) {
+  if (!confirm('確定要刪除此留言？')) return;
+  const res = await api(`/api/contact/${id}`, { method: 'DELETE' });
+  if (res.ok) { toast('留言已刪除'); loadMessages(); }
+  else toast('刪除失敗', 'error');
 }
 
 // ===== Footer =====
@@ -417,7 +477,8 @@ function fillCases(cases) {
   cases.forEach(c => {
     const div = document.createElement('div');
     div.className = 'card-item';
-    const imgSrc = c.imageId ? `${API_BASE}/api/images/${c.imageId}` : (c.image ? `${API_BASE}/api/images/${c.image.id}` : '');
+    const imgId = c.imageId || c.image?.id;
+    const imgSrc = imgId ? `${API_BASE}/api/images/${imgId}` : '';
     div.innerHTML = `
       <div class="case-card-admin">
         <div class="case-img-wrap"><img src="${imgSrc}" alt="${c.name}"></div>
@@ -442,7 +503,8 @@ function openCaseEditor(caseItem = null) {
   const isNew = !caseItem;
   const overlay = document.createElement('div');
   overlay.className = 'edit-modal-overlay';
-  const imgSrc = caseItem?.imageId ? `${API_BASE}/api/images/${caseItem.imageId}` : (caseItem?.image ? `${API_BASE}/api/images/${caseItem.image.id}` : '');
+  const imgId = caseItem?.imageId || caseItem?.image?.id;
+  const imgSrc = imgId ? `${API_BASE}/api/images/${imgId}` : '';
   overlay.innerHTML = `
     <div class="edit-modal">
       <h3>${isNew ? '新增案例' : '編輯案例'}</h3>
@@ -481,17 +543,13 @@ function openCaseEditor(caseItem = null) {
       toast('請填寫企業名稱、分類和描述', 'error');
       return;
     }
-    let res;
-    if (isNew) {
-      res = await api('/api/cases', { method: 'POST', body });
-    } else {
-      res = await api(`/api/cases/${caseItem.id}`, { method: 'PUT', body });
-    }
+    const url = isNew ? '/api/cases' : `/api/cases/${caseItem.id}`;
+    const method = isNew ? 'POST' : 'PUT';
+    const res = await api(url, { method, body });
     if (res.ok) {
       toast(isNew ? '案例已新增' : '案例已更新');
       overlay.remove();
-      const casesRes = await api('/api/cases');
-      if (casesRes.ok) fillCases(await casesRes.json());
+      reloadCases();
     } else {
       toast('操作失敗', 'error');
     }
@@ -503,11 +561,15 @@ async function deleteCase(id) {
   const res = await api(`/api/cases/${id}`, { method: 'DELETE' });
   if (res.ok) {
     toast('案例已刪除');
-    const casesRes = await api('/api/cases');
-    if (casesRes.ok) fillCases(await casesRes.json());
+    reloadCases();
   } else {
     toast('刪除失敗', 'error');
   }
+}
+
+async function reloadCases() {
+  const casesRes = await api('/api/cases');
+  if (casesRes.ok) fillCases(await casesRes.json());
 }
 
 document.getElementById('add-case').addEventListener('click', () => openCaseEditor());

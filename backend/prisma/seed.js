@@ -5,6 +5,17 @@ const path = require('path');
 
 const prisma = new PrismaClient();
 
+// 從檔案路徑匯入圖片到 DB，回傳圖片 ID（檔案不存在則回傳 null）
+async function importImage(filePath, filename) {
+  if (!fs.existsSync(filePath)) return null;
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeType = ext === '.png' ? 'image/png' : 'image/jpeg';
+  const img = await prisma.image.create({
+    data: { filename, mimeType, data: fs.readFileSync(filePath) },
+  });
+  return img.id;
+}
+
 async function main() {
   // 建立管理員帳號
   const email = process.env.ADMIN_EMAIL || 'admin@example.com';
@@ -30,14 +41,9 @@ async function main() {
     : path.join(__dirname, '../../frontend/scraped');
 
   // Hero section — 匯入背景圖
-  let heroBgImageId = null;
-  const heroBgPath = path.join(scrapedBase, '01_網站首頁/images/image_005.jpg');
-  if (fs.existsSync(heroBgPath)) {
-    const img = await prisma.image.create({
-      data: { filename: 'hero_bg.jpg', mimeType: 'image/jpeg', data: fs.readFileSync(heroBgPath) },
-    });
-    heroBgImageId = img.id;
-  }
+  const heroBgImageId = await importImage(
+    path.join(scrapedBase, '01_網站首頁/images/image_005.jpg'), 'hero_bg.jpg'
+  );
   await upsertSection('hero', {
     label: 'Law Office',
     title: '劉鈞豪 律師事務所',
@@ -48,14 +54,9 @@ async function main() {
   });
 
   // About section — 匯入律師照片
-  let aboutPhotoImageId = null;
-  const aboutPhotoPath = path.join(scrapedBase, '02_關於律師/images/image_001.jpg');
-  if (fs.existsSync(aboutPhotoPath)) {
-    const img = await prisma.image.create({
-      data: { filename: 'about_photo.jpg', mimeType: 'image/jpeg', data: fs.readFileSync(aboutPhotoPath) },
-    });
-    aboutPhotoImageId = img.id;
-  }
+  const aboutPhotoImageId = await importImage(
+    path.join(scrapedBase, '02_關於律師/images/image_001.jpg'), 'about_photo.jpg'
+  );
   await upsertSection('about', {
     name: '劉鈞豪',
     position: '主持律師 · Director',
@@ -115,14 +116,9 @@ async function main() {
   });
 
   // News section — 匯入動態照片
-  let newsPhotoImageId = null;
-  const newsPhotoPath = path.join(scrapedBase, '06_律師動態/images/image_001.jpg');
-  if (fs.existsSync(newsPhotoPath)) {
-    const img = await prisma.image.create({
-      data: { filename: 'news_photo.jpg', mimeType: 'image/jpeg', data: fs.readFileSync(newsPhotoPath) },
-    });
-    newsPhotoImageId = img.id;
-  }
+  const newsPhotoImageId = await importImage(
+    path.join(scrapedBase, '06_律師動態/images/image_001.jpg'), 'news_photo.jpg'
+  );
   await upsertSection('news', {
     photoImageId: newsPhotoImageId,
     photo: 'scraped/06_律師動態/images/image_001.jpg',
@@ -202,17 +198,7 @@ async function main() {
   if (existingCases === 0) {
     for (let i = 0; i < casesData.length; i++) {
       const c = casesData[i];
-      let imageId = null;
-      const imgPath = path.join(imgDir, c.img);
-      if (fs.existsSync(imgPath)) {
-        const data = fs.readFileSync(imgPath);
-        const ext = path.extname(c.img).toLowerCase();
-        const mimeType = ext === '.png' ? 'image/png' : ext === '.jpeg' ? 'image/jpeg' : 'image/jpeg';
-        const image = await prisma.image.create({
-          data: { filename: c.img, mimeType, data },
-        });
-        imageId = image.id;
-      }
+      const imageId = await importImage(path.join(imgDir, c.img), c.img);
       await prisma.case.create({
         data: { name: c.name, category: c.category, desc: c.desc, imageId, sortOrder: i + 1 },
       });

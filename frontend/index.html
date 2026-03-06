@@ -269,11 +269,11 @@
         <div class="section-line"></div>
       </div>
       <div class="contact-grid fade-in">
-        <form class="contact-form" onsubmit="event.preventDefault(); alert('感謝您的留言，我們將盡快回覆！');">
-          <input type="text" placeholder="姓名" required>
-          <input type="email" placeholder="Email" required>
-          <input type="tel" placeholder="電話">
-          <textarea placeholder="請留下您的問題或需要的協助，我們將盡快回應"></textarea>
+        <form class="contact-form" id="contact-form">
+          <input type="text" name="name" placeholder="姓名" required>
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="tel" name="phone" placeholder="電話">
+          <textarea name="message" placeholder="請留下您的問題或需要的協助，我們將盡快回應" required></textarea>
           <button type="submit">送出訊息</button>
         </form>
         <div class="contact-info">
