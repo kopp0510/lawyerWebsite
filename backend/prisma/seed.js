@@ -24,19 +24,42 @@ async function main() {
     create: { carouselDisplayCount: 9 },
   });
 
-  // Hero section
+  // 圖片基底路徑
+  const scrapedBase = fs.existsSync('/app/frontend/scraped')
+    ? '/app/frontend/scraped'
+    : path.join(__dirname, '../../frontend/scraped');
+
+  // Hero section — 匯入背景圖
+  let heroBgImageId = null;
+  const heroBgPath = path.join(scrapedBase, '01_網站首頁/images/image_005.jpg');
+  if (fs.existsSync(heroBgPath)) {
+    const img = await prisma.image.create({
+      data: { filename: 'hero_bg.jpg', mimeType: 'image/jpeg', data: fs.readFileSync(heroBgPath) },
+    });
+    heroBgImageId = img.id;
+  }
   await upsertSection('hero', {
     label: 'Law Office',
     title: '劉鈞豪 律師事務所',
     tagline: '專業法律服務 · SINCE 2018',
     ctaText: '聯絡律師 →',
+    bgImageId: heroBgImageId,
     bgImage: 'scraped/01_網站首頁/images/image_005.jpg',
   });
 
-  // About section
+  // About section — 匯入律師照片
+  let aboutPhotoImageId = null;
+  const aboutPhotoPath = path.join(scrapedBase, '02_關於律師/images/image_001.jpg');
+  if (fs.existsSync(aboutPhotoPath)) {
+    const img = await prisma.image.create({
+      data: { filename: 'about_photo.jpg', mimeType: 'image/jpeg', data: fs.readFileSync(aboutPhotoPath) },
+    });
+    aboutPhotoImageId = img.id;
+  }
   await upsertSection('about', {
     name: '劉鈞豪',
     position: '主持律師 · Director',
+    photoImageId: aboutPhotoImageId,
     photo: 'scraped/02_關於律師/images/image_001.jpg',
     paragraphs: [
       '成立於民國107年，承辦民事、刑事執行案件，協助企業進行商業事件、勞資事件之處理。',
@@ -91,8 +114,17 @@ async function main() {
     note: '以上收費僅供參考，實際報價仍應視委任內容之情況而定',
   });
 
-  // News section
+  // News section — 匯入動態照片
+  let newsPhotoImageId = null;
+  const newsPhotoPath = path.join(scrapedBase, '06_律師動態/images/image_001.jpg');
+  if (fs.existsSync(newsPhotoPath)) {
+    const img = await prisma.image.create({
+      data: { filename: 'news_photo.jpg', mimeType: 'image/jpeg', data: fs.readFileSync(newsPhotoPath) },
+    });
+    newsPhotoImageId = img.id;
+  }
   await upsertSection('news', {
+    photoImageId: newsPhotoImageId,
     photo: 'scraped/06_律師動態/images/image_001.jpg',
     title: '現任職務與榮譽',
     items: [
@@ -160,9 +192,7 @@ async function main() {
 
   // 嘗試匯入圖片（Docker 環境中 scraped 資料夾在 frontend 中，可能不存在）
   // Docker 中掛載到 /app/frontend/scraped，本地開發則是相對路徑
-  const imgDir = fs.existsSync('/app/frontend/scraped')
-    ? '/app/frontend/scraped/05_企業委任/images'
-    : path.join(__dirname, '../../frontend/scraped/05_企業委任/images');
+  const imgDir = path.join(scrapedBase, '05_企業委任/images');
   const existingCases = await prisma.case.count();
   if (existingCases === 0) {
     for (let i = 0; i < casesData.length; i++) {
