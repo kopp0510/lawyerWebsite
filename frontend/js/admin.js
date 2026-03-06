@@ -339,6 +339,10 @@ function fillContact(data) {
   document.getElementById('contact-phone').value = data.phone || '';
   document.getElementById('contact-email').value = data.email || '';
   document.getElementById('contact-mapUrl').value = data.mapUrl || '';
+  if (data.mapUrl) {
+    document.getElementById('contact-map-iframe').src = data.mapUrl;
+    document.getElementById('contact-map-preview').style.display = '';
+  }
 }
 
 function collectContact() {
@@ -501,6 +505,18 @@ async function deleteCase(id) {
 }
 
 document.getElementById('add-case').addEventListener('click', () => openCaseEditor());
+
+// 地圖預覽
+document.getElementById('contact-mapUrl-preview-btn').addEventListener('click', () => {
+  const url = document.getElementById('contact-mapUrl').value.trim();
+  const preview = document.getElementById('contact-map-preview');
+  if (url) {
+    document.getElementById('contact-map-iframe').src = url;
+    preview.style.display = '';
+  } else {
+    preview.style.display = 'none';
+  }
+});
 
 // 儲存設定（輪播數量）
 document.getElementById('save-settings').addEventListener('click', async () => {
