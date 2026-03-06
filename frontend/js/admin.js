@@ -405,6 +405,11 @@ function collectFooter() {
 // ===== Cases =====
 let casesData = [];
 
+function updateCasesCount() {
+  const count = document.getElementById('cases-list').children.length;
+  document.getElementById('cases-total-count').textContent = `（共 ${count} 筆案例）`;
+}
+
 function fillCases(cases) {
   casesData = cases;
   const container = document.getElementById('cases-list');
@@ -430,6 +435,7 @@ function fillCases(cases) {
     div.querySelector('[data-action="delete"]').addEventListener('click', () => deleteCase(c.id));
     container.appendChild(div);
   });
+  updateCasesCount();
 }
 
 function openCaseEditor(caseItem = null) {
