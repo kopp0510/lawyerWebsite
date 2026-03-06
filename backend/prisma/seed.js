@@ -212,11 +212,13 @@ async function main() {
 }
 
 async function upsertSection(section, content) {
-  await prisma.sectionContent.upsert({
-    where: { section },
-    update: { content },
-    create: { section, content },
-  });
+  const existing = await prisma.sectionContent.findUnique({ where: { section } });
+  if (existing) {
+    console.log(`區塊 "${section}" 已存在，跳過`);
+    return;
+  }
+  await prisma.sectionContent.create({ data: { section, content } });
+  console.log(`區塊 "${section}" 已建立`);
 }
 
 main()
