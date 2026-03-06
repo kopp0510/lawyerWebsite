@@ -135,7 +135,12 @@ async function main() {
       '112 經濟部中小企業處 榮譽律師',
       '海洋公務人員福利委員會 法律顧問',
     ],
-    socialLinks: { linkedin: '#', instagram: '#', line: '#', facebook: '#' },
+    socialLinks: {
+      linkedin: { url: '#', iconId: null },
+      instagram: { url: '#', iconId: null },
+      line: { url: '#', iconId: null },
+      facebook: { url: '#', iconId: null },
+    },
   });
 
   // Contact section

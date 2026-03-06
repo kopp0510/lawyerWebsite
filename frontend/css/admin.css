@@ -289,6 +289,19 @@ body {
 .case-card-admin .case-info span { font-size: 0.8rem; color: var(--text-secondary); }
 .case-card-admin .case-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
+/* 社群連結上傳 */
+.social-link-row { margin-bottom: 12px; }
+.social-link-row > label { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; display: block; }
+.social-link-fields { display: flex; align-items: center; gap: 10px; }
+.social-icon-upload { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.social-icon-preview { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); display: none; }
+.btn-upload-icon {
+  padding: 4px 10px; font-size: 0.75rem; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--card); cursor: pointer; white-space: nowrap;
+}
+.btn-upload-icon:hover { background: var(--bg); }
+.social-link-fields input[type="text"] { flex: 1; }
+
 /* Toast */
 .toast {
   position: fixed;

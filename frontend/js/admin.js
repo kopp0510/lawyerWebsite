@@ -301,10 +301,19 @@ function fillNews(data) {
   }
   fillDynamicList('news-items', data.items || [], 'input');
   if (data.socialLinks) {
-    document.getElementById('news-linkedin').value = data.socialLinks.linkedin || '';
-    document.getElementById('news-instagram').value = data.socialLinks.instagram || '';
-    document.getElementById('news-line').value = data.socialLinks.line || '';
-    document.getElementById('news-facebook').value = data.socialLinks.facebook || '';
+    const platforms = ['linkedin', 'instagram', 'line', 'facebook'];
+    platforms.forEach(p => {
+      const val = data.socialLinks[p];
+      const url = typeof val === 'string' ? val : val?.url || '';
+      const iconId = typeof val === 'object' ? val?.iconId : null;
+      document.getElementById(`news-${p}`).value = url;
+      if (iconId) {
+        document.getElementById(`news-${p}-icon-id`).value = iconId;
+        const preview = document.getElementById(`news-${p}-icon-preview`);
+        preview.src = `${API_BASE}/api/images/${iconId}`;
+        preview.style.display = 'block';
+      }
+    });
   }
 }
 
@@ -315,10 +324,10 @@ function collectNews() {
     photoImageId: parseInt(document.getElementById('news-photoImageId').value) || null,
     items: collectDynamicList('news-items'),
     socialLinks: {
-      linkedin: document.getElementById('news-linkedin').value,
-      instagram: document.getElementById('news-instagram').value,
-      line: document.getElementById('news-line').value,
-      facebook: document.getElementById('news-facebook').value,
+      linkedin: { url: document.getElementById('news-linkedin').value, iconId: parseInt(document.getElementById('news-linkedin-icon-id').value) || null },
+      instagram: { url: document.getElementById('news-instagram').value, iconId: parseInt(document.getElementById('news-instagram-icon-id').value) || null },
+      line: { url: document.getElementById('news-line').value, iconId: parseInt(document.getElementById('news-line-icon-id').value) || null },
+      facebook: { url: document.getElementById('news-facebook').value, iconId: parseInt(document.getElementById('news-facebook-icon-id').value) || null },
     },
   };
 }
@@ -610,6 +619,33 @@ document.querySelectorAll('.btn-save').forEach(btn => {
     }
     btn.disabled = false;
     btn.textContent = '儲存';
+  });
+});
+
+// ===== 社群圖片上傳 =====
+document.querySelectorAll('.btn-upload-icon').forEach(btn => {
+  const targetId = btn.dataset.target;
+  const fileInput = document.getElementById(targetId);
+  const preview = document.getElementById(`${targetId}-preview`);
+  const hiddenInput = document.getElementById(`${targetId}-id`);
+
+  btn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await api('/api/images', { method: 'POST', body: formData, headers: {} });
+    if (res.ok) {
+      const data = await res.json();
+      hiddenInput.value = data.id;
+      preview.src = `${API_BASE}/api/images/${data.id}`;
+      toast('圖片上傳成功');
+    } else {
+      toast('圖片上傳失敗', 'error');
+    }
   });
 });
 

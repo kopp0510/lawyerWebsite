@@ -187,11 +187,53 @@
         </div>
         <div class="form-group">
           <label>社群連結</label>
-          <div class="inline-fields">
-            <input type="text" id="news-linkedin" placeholder="LinkedIn URL">
-            <input type="text" id="news-instagram" placeholder="Instagram URL">
-            <input type="text" id="news-line" placeholder="LINE URL">
-            <input type="text" id="news-facebook" placeholder="Facebook URL">
+          <div class="social-link-row">
+            <label>LinkedIn</label>
+            <div class="social-link-fields">
+              <div class="social-icon-upload">
+                <img id="news-linkedin-icon-preview" class="social-icon-preview" src="" alt="">
+                <button type="button" class="btn-upload-icon" data-target="news-linkedin-icon">選擇圖片</button>
+                <input type="file" id="news-linkedin-icon" accept="image/*" hidden>
+                <input type="hidden" id="news-linkedin-icon-id">
+              </div>
+              <input type="text" id="news-linkedin" placeholder="LinkedIn URL">
+            </div>
+          </div>
+          <div class="social-link-row">
+            <label>Instagram</label>
+            <div class="social-link-fields">
+              <div class="social-icon-upload">
+                <img id="news-instagram-icon-preview" class="social-icon-preview" src="" alt="">
+                <button type="button" class="btn-upload-icon" data-target="news-instagram-icon">選擇圖片</button>
+                <input type="file" id="news-instagram-icon" accept="image/*" hidden>
+                <input type="hidden" id="news-instagram-icon-id">
+              </div>
+              <input type="text" id="news-instagram" placeholder="Instagram URL">
+            </div>
+          </div>
+          <div class="social-link-row">
+            <label>LINE</label>
+            <div class="social-link-fields">
+              <div class="social-icon-upload">
+                <img id="news-line-icon-preview" class="social-icon-preview" src="" alt="">
+                <button type="button" class="btn-upload-icon" data-target="news-line-icon">選擇圖片</button>
+                <input type="file" id="news-line-icon" accept="image/*" hidden>
+                <input type="hidden" id="news-line-icon-id">
+              </div>
+              <input type="text" id="news-line" placeholder="LINE URL">
+            </div>
+          </div>
+          <div class="social-link-row">
+            <label>Facebook</label>
+            <div class="social-link-fields">
+              <div class="social-icon-upload">
+                <img id="news-facebook-icon-preview" class="social-icon-preview" src="" alt="">
+                <button type="button" class="btn-upload-icon" data-target="news-facebook-icon">選擇圖片</button>
+                <input type="file" id="news-facebook-icon" accept="image/*" hidden>
+                <input type="hidden" id="news-facebook-icon-id">
+              </div>
+              <input type="text" id="news-facebook" placeholder="Facebook URL">
+            </div>
           </div>
         </div>
         <button class="btn-save" data-section="news">儲存</button>

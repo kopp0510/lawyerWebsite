@@ -201,7 +201,18 @@ function renderNews(data) {
   if (social && data.socialLinks) {
     const labels = { linkedin: 'in', instagram: 'ig', line: 'Li', facebook: 'fb' };
     social.innerHTML = Object.entries(data.socialLinks)
-      .map(([k, v]) => `<a href="${v}" aria-label="${k}">${labels[k] || k}</a>`)
+      .filter(([k, v]) => {
+        const url = typeof v === 'string' ? v : v?.url;
+        return url && url !== '#' && url.trim() !== '';
+      })
+      .map(([k, v]) => {
+        const url = typeof v === 'string' ? v : v?.url;
+        const iconId = typeof v === 'object' ? v?.iconId : null;
+        const inner = iconId
+          ? `<img src="${API_BASE}/api/images/${iconId}" alt="${k}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+          : (labels[k] || k);
+        return `<a href="${url}" aria-label="${k}" target="_blank">${inner}</a>`;
+      })
       .join('');
   }
 }
