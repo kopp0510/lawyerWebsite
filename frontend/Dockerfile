@@ -5,4 +5,4 @@ COPY . /usr/share/nginx/html
 
 ENV BACKEND_URL=http://backend:3000
 
-EXPOSE 80
+EXPOSE 8080
