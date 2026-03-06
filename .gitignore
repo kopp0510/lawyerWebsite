@@ -8,3 +8,6 @@ preview-*.png
 modal-*.png
 .env
 backend/.env
+scraped/
+frontend/scraped/
+.playwright-mcp/
