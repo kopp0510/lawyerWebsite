@@ -629,7 +629,7 @@ function openCaseEditor(caseItem = null) {
       <div class="form-group"><label>描述</label><textarea id="case-desc">${caseItem?.desc || ''}</textarea></div>
       <div class="form-group">
         <label>圖片</label>
-        <p class="hint">建議尺寸：400 × 180 px（約 2:1 橫式），企業 Logo 或代表圖</p>
+        <p class="hint">ℹ️ 建議尺寸：400 × 180 px（約 2:1 橫式），企業 Logo 或代表圖</p>
         <div class="image-upload" data-target="case-imageId">
           <img class="img-preview" src="${imgSrc}" alt="">
           <input type="file" accept="image/*" class="file-input">
