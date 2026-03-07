@@ -247,8 +247,10 @@ function renderNews(data) {
   const social = section.querySelector('.social-links');
   if (social && data.socialLinks) {
     const labels = { linkedin: 'in', instagram: 'ig', line: 'Li', facebook: 'fb' };
-    social.innerHTML = Object.entries(data.socialLinks)
-      .map(([k, v]) => ({ key: k, ...parseSocialValue(v) }))
+    const socialOrder = ['linkedin', 'instagram', 'line', 'facebook'];
+    social.innerHTML = socialOrder
+      .filter(k => data.socialLinks[k])
+      .map(k => ({ key: k, ...parseSocialValue(data.socialLinks[k]) }))
       .filter(({ url }) => url && url !== '#' && url.trim() !== '')
       .map(({ key, url, iconId }) => {
         const inner = iconId
