@@ -163,6 +163,112 @@ async function main() {
     ],
   });
 
+  // SEO 設定 — 首頁
+  await upsertSection('seo-index', {
+    meta: {
+      title: '劉鈞豪律師事務所 | 台中專業法律服務 — 民事、刑事、企業法律顧問',
+      description: '劉鈞豪律師事務所位於台中市西區，自2018年起提供民事、刑事、行政訴訟及企業法律顧問服務。律師高考及格，逢甲大學財經法律碩士，專業承辦合約審閱、勞資爭議、智慧財產權等案件。',
+      keywords: '律師,台中律師,法律顧問,民事訴訟,刑事訴訟,企業法律顧問,劉鈞豪,律師事務所,台中市西區,合約審閱,勞資爭議',
+    },
+    canonical: 'https://www.liulawoffice.com/',
+    og: {
+      type: 'website',
+      title: '劉鈞豪律師事務所 | 台中專業法律服務',
+      description: '自2018年起提供民事、刑事、行政訴訟及企業法律顧問服務。台中市西區，專業、誠信、值得信賴。',
+      image: 'https://www.liulawoffice.com/asset/favicon.png',
+      url: 'https://www.liulawoffice.com/',
+      locale: 'zh_TW',
+      siteName: '劉鈞豪律師事務所',
+    },
+    twitter: {
+      card: 'summary',
+      title: '劉鈞豪律師事務所 | 台中專業法律服務',
+      description: '自2018年起提供民事、刑事、行政訴訟及企業法律顧問服務。台中市西區，專業、誠信、值得信賴。',
+      image: 'https://www.liulawoffice.com/asset/favicon.png',
+    },
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'LegalService',
+      name: '劉鈞豪律師事務所',
+      alternateName: 'Liu Jun Hao Law Office',
+      url: 'https://www.liulawoffice.com',
+      logo: 'https://www.liulawoffice.com/asset/favicon.png',
+      image: 'https://www.liulawoffice.com/asset/favicon.png',
+      description: '劉鈞豪律師事務所位於台中市西區，自2018年起提供民事、刑事、行政訴訟及企業法律顧問服務。',
+      foundingDate: '2018',
+      telephone: '04-22220093',
+      email: 'info@mysite.com',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '市府路 1-1 號',
+        addressLocality: '西區',
+        addressRegion: '台中市',
+        postalCode: '403',
+        addressCountry: 'TW',
+      },
+      geo: { '@type': 'GeoCoordinates', latitude: 24.148, longitude: 120.674 },
+      areaServed: { '@type': 'City', name: '台中市' },
+      priceRange: 'NT$3,000 - NT$80,000',
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: '法律服務',
+        itemListElement: [
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: '民事 / 家事訴訟' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: '刑事訴訟' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: '行政 / 智慧訴訟' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: '企業法律顧問' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: '合約審閱與擬定' } },
+        ],
+      },
+      employee: {
+        '@type': 'Person',
+        name: '劉鈞豪',
+        jobTitle: '主持律師',
+        alumniOf: [
+          { '@type': 'EducationalOrganization', name: '逢甲大學 財經法律研究所' },
+          { '@type': 'EducationalOrganization', name: '銘傳大學 財金法律學系' },
+        ],
+      },
+    },
+  });
+
+  // SEO 設定 — 案例頁
+  await upsertSection('seo-cases', {
+    meta: {
+      title: '案例分享 — 劉鈞豪律師事務所 | 企業委任客戶',
+      description: '劉鈞豪律師事務所企業委任案例分享，服務超過20家企業客戶，涵蓋科技、製造、營造、食品、貿易等產業，提供常年法律顧問服務。',
+      keywords: '企業法律顧問,案例分享,企業委任,律師事務所,台中律師,劉鈞豪',
+    },
+    canonical: 'https://www.liulawoffice.com/cases.html',
+    og: {
+      type: 'website',
+      title: '案例分享 — 劉鈞豪律師事務所',
+      description: '服務超過20家企業客戶，涵蓋科技、製造、營造、食品、貿易等產業，提供常年法律顧問服務。',
+      image: 'https://www.liulawoffice.com/asset/favicon.png',
+      url: 'https://www.liulawoffice.com/cases.html',
+      locale: 'zh_TW',
+      siteName: '劉鈞豪律師事務所',
+    },
+    twitter: {
+      card: 'summary',
+      title: '案例分享 — 劉鈞豪律師事務所',
+      description: '服務超過20家企業客戶，涵蓋科技、製造、營造、食品、貿易等產業。',
+      image: 'https://www.liulawoffice.com/asset/favicon.png',
+    },
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: '案例分享 — 劉鈞豪律師事務所',
+      description: '劉鈞豪律師事務所企業委任案例分享，服務超過20家企業客戶。',
+      url: 'https://www.liulawoffice.com/cases.html',
+      isPartOf: {
+        '@type': 'WebSite',
+        name: '劉鈞豪律師事務所',
+        url: 'https://www.liulawoffice.com',
+      },
+    },
+  });
+
   // 匯入案例圖片和資料
   const casesData = [
     { name: '廣鎰有限公司', img: 'image_002.jpg', category: '貿易業', desc: '提供常年法律顧問服務，協助企業合約審閱、勞資爭議處理及商業糾紛諮詢，保障企業營運的法律安全。' },

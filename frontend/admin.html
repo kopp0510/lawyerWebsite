@@ -41,6 +41,7 @@
       <button class="tab" data-tab="contact">聯絡律師</button>
       <button class="tab" data-tab="messages">客戶留言</button>
       <button class="tab" data-tab="footer">Footer</button>
+      <button class="tab" data-tab="seo">SEO 設定</button>
     </nav>
 
     <main class="admin-content">
@@ -304,6 +305,97 @@
           <button type="button" class="btn-sm btn-add" id="add-footer-institution">+ 新增機構</button>
         </div>
         <button class="btn-save" data-section="footer">儲存</button>
+      </div>
+      <!-- SEO Tab -->
+      <div class="tab-panel" id="panel-seo">
+        <h2>SEO 設定</h2>
+        <p style="color:var(--text-light);font-size:0.85em;margin-bottom:16px;">
+          注意：社群平台爬蟲（Facebook、LINE、Twitter）不執行 JavaScript，後台修改僅影響瀏覽器端和 Google 爬蟲。HTML 中的靜態 meta tags 仍作為社群分享的 fallback。
+        </p>
+        <div class="form-group">
+          <label>選擇頁面</label>
+          <select id="seo-page-select">
+            <option value="index">首頁</option>
+            <option value="cases">案例頁</option>
+          </select>
+        </div>
+        <hr>
+        <h3>Meta 標籤</h3>
+        <div class="form-group">
+          <label>Title <span class="tooltip-icon" data-tip="瀏覽器標籤頁標題，也是搜尋結果中顯示的標題，建議 30-65 字元">?</span> <span id="seo-title-count" style="color:var(--text-light);font-size:0.85em;"></span></label>
+          <input type="text" id="seo-meta-title">
+        </div>
+        <div class="form-group">
+          <label>Description <span class="tooltip-icon" data-tip="搜尋結果中標題下方的摘要描述，建議 70-155 字元">?</span> <span id="seo-desc-count" style="color:var(--text-light);font-size:0.85em;"></span></label>
+          <textarea id="seo-meta-description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Keywords <span class="tooltip-icon" data-tip="搜尋引擎參考的關鍵字，以逗號分隔">?</span></label>
+          <input type="text" id="seo-meta-keywords">
+        </div>
+        <div class="form-group">
+          <label>Canonical URL <span class="tooltip-icon" data-tip="告訴搜尋引擎此頁面的標準網址，避免重複內容問題">?</span></label>
+          <input type="text" id="seo-canonical">
+        </div>
+        <hr>
+        <h3>Open Graph</h3>
+        <div class="form-group">
+          <label>og:type <span class="tooltip-icon" data-tip="頁面類型（如 website、article），影響社群平台解讀方式">?</span></label>
+          <input type="text" id="seo-og-type">
+        </div>
+        <div class="form-group">
+          <label>og:title <span class="tooltip-icon" data-tip="社群分享時顯示的標題">?</span></label>
+          <input type="text" id="seo-og-title">
+        </div>
+        <div class="form-group">
+          <label>og:description <span class="tooltip-icon" data-tip="社群分享時顯示的描述文字">?</span></label>
+          <textarea id="seo-og-description" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>og:image <span class="tooltip-icon" data-tip="社群分享時顯示的預覽圖片 URL">?</span></label>
+          <input type="text" id="seo-og-image">
+        </div>
+        <div class="form-group">
+          <label>og:url <span class="tooltip-icon" data-tip="社群分享時指向的頁面網址">?</span></label>
+          <input type="text" id="seo-og-url">
+        </div>
+        <div class="form-group">
+          <label>og:locale <span class="tooltip-icon" data-tip="內容語系（如 zh_TW），影響社群平台顯示語言">?</span></label>
+          <input type="text" id="seo-og-locale">
+        </div>
+        <div class="form-group">
+          <label>og:site_name <span class="tooltip-icon" data-tip="網站名稱，顯示在社群分享卡片上">?</span></label>
+          <input type="text" id="seo-og-siteName">
+        </div>
+        <hr>
+        <h3>Twitter Card</h3>
+        <div class="form-group">
+          <label>Card Type <span class="tooltip-icon" data-tip="summary 顯示小圖，summary_large_image 顯示大圖">?</span></label>
+          <select id="seo-twitter-card">
+            <option value="summary">summary</option>
+            <option value="summary_large_image">summary_large_image</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>twitter:title <span class="tooltip-icon" data-tip="Twitter/X 分享時顯示的標題">?</span></label>
+          <input type="text" id="seo-twitter-title">
+        </div>
+        <div class="form-group">
+          <label>twitter:description <span class="tooltip-icon" data-tip="Twitter/X 分享時顯示的描述">?</span></label>
+          <textarea id="seo-twitter-description" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>twitter:image <span class="tooltip-icon" data-tip="Twitter/X 分享時顯示的圖片 URL">?</span></label>
+          <input type="text" id="seo-twitter-image">
+        </div>
+        <hr>
+        <h3>JSON-LD 結構化資料 <span class="tooltip-icon" data-tip="Google 結構化資料，影響搜尋結果中的豐富摘要（Rich Snippets）">?</span></h3>
+        <div class="form-group">
+          <textarea id="seo-jsonld" rows="15" style="font-family:monospace;font-size:0.85em;white-space:pre;"></textarea>
+          <button type="button" class="btn-sm" id="seo-jsonld-validate" style="margin-top:6px;">驗證 JSON</button>
+          <p id="seo-jsonld-error" style="color:#e74c3c;font-size:0.85em;margin-top:4px;"></p>
+        </div>
+        <button class="btn-save" data-section="seo">儲存</button>
       </div>
     </main>
 

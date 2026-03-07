@@ -5,6 +5,7 @@
 const API_BASE = '';
 let token = localStorage.getItem('admin_token');
 let contentData = {};
+let seoDataCache = { index: null, cases: null };
 
 // ===== 工具函式 =====
 function api(path, options = {}) {
@@ -105,6 +106,10 @@ async function loadAllData() {
     fillNews(contentData.news);
     fillContact(contentData.contact);
     fillFooter(contentData.footer);
+    // 載入 SEO 資料
+    seoDataCache.index = contentData['seo-index'] || null;
+    seoDataCache.cases = contentData['seo-cases'] || null;
+    fillSeo(seoDataCache[document.getElementById('seo-page-select').value]);
   }
   if (casesRes.ok) {
     const cases = await casesRes.json();
@@ -462,6 +467,117 @@ function collectFooter() {
   };
 }
 
+// ===== SEO =====
+function fillSeo(data) {
+  if (!data) {
+    // 清空表單
+    ['seo-meta-title', 'seo-meta-description', 'seo-meta-keywords', 'seo-canonical',
+     'seo-og-type', 'seo-og-title', 'seo-og-description', 'seo-og-image', 'seo-og-url', 'seo-og-locale', 'seo-og-siteName',
+     'seo-twitter-title', 'seo-twitter-description', 'seo-twitter-image',
+     'seo-jsonld'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('seo-twitter-card').value = 'summary';
+    updateSeoCharCounts();
+    return;
+  }
+  const m = data.meta || {};
+  document.getElementById('seo-meta-title').value = m.title || '';
+  document.getElementById('seo-meta-description').value = m.description || '';
+  document.getElementById('seo-meta-keywords').value = m.keywords || '';
+  document.getElementById('seo-canonical').value = data.canonical || '';
+
+  const og = data.og || {};
+  document.getElementById('seo-og-type').value = og.type || '';
+  document.getElementById('seo-og-title').value = og.title || '';
+  document.getElementById('seo-og-description').value = og.description || '';
+  document.getElementById('seo-og-image').value = og.image || '';
+  document.getElementById('seo-og-url').value = og.url || '';
+  document.getElementById('seo-og-locale').value = og.locale || '';
+  document.getElementById('seo-og-siteName').value = og.siteName || '';
+
+  const tw = data.twitter || {};
+  document.getElementById('seo-twitter-card').value = tw.card || 'summary';
+  document.getElementById('seo-twitter-title').value = tw.title || '';
+  document.getElementById('seo-twitter-description').value = tw.description || '';
+  document.getElementById('seo-twitter-image').value = tw.image || '';
+
+  document.getElementById('seo-jsonld').value = data.jsonLd ? JSON.stringify(data.jsonLd, null, 2) : '';
+  document.getElementById('seo-jsonld-error').textContent = '';
+  updateSeoCharCounts();
+}
+
+function collectSeo() {
+  const jsonLdStr = document.getElementById('seo-jsonld').value.trim();
+  let jsonLd = null;
+  if (jsonLdStr) {
+    try {
+      jsonLd = JSON.parse(jsonLdStr);
+    } catch (e) {
+      document.getElementById('seo-jsonld-error').textContent = 'JSON 格式錯誤：' + e.message;
+      return null;
+    }
+  }
+  document.getElementById('seo-jsonld-error').textContent = '';
+  return {
+    meta: {
+      title: document.getElementById('seo-meta-title').value,
+      description: document.getElementById('seo-meta-description').value,
+      keywords: document.getElementById('seo-meta-keywords').value,
+    },
+    canonical: document.getElementById('seo-canonical').value,
+    og: {
+      type: document.getElementById('seo-og-type').value,
+      title: document.getElementById('seo-og-title').value,
+      description: document.getElementById('seo-og-description').value,
+      image: document.getElementById('seo-og-image').value,
+      url: document.getElementById('seo-og-url').value,
+      locale: document.getElementById('seo-og-locale').value,
+      siteName: document.getElementById('seo-og-siteName').value,
+    },
+    twitter: {
+      card: document.getElementById('seo-twitter-card').value,
+      title: document.getElementById('seo-twitter-title').value,
+      description: document.getElementById('seo-twitter-description').value,
+      image: document.getElementById('seo-twitter-image').value,
+    },
+    jsonLd,
+  };
+}
+
+function updateSeoCharCounts() {
+  const title = document.getElementById('seo-meta-title').value;
+  const desc = document.getElementById('seo-meta-description').value;
+  document.getElementById('seo-title-count').textContent = `(${title.length} 字)`;
+  document.getElementById('seo-desc-count').textContent = `(${desc.length} 字)`;
+}
+
+// SEO 頁面切換
+document.getElementById('seo-page-select').addEventListener('change', (e) => {
+  fillSeo(seoDataCache[e.target.value]);
+});
+
+// SEO 字數即時更新
+document.getElementById('seo-meta-title').addEventListener('input', updateSeoCharCounts);
+document.getElementById('seo-meta-description').addEventListener('input', updateSeoCharCounts);
+
+// JSON-LD 驗證按鈕
+document.getElementById('seo-jsonld-validate').addEventListener('click', () => {
+  const str = document.getElementById('seo-jsonld').value.trim();
+  const errEl = document.getElementById('seo-jsonld-error');
+  if (!str) { errEl.textContent = ''; return; }
+  try {
+    JSON.parse(str);
+    errEl.style.color = '#27ae60';
+    errEl.textContent = 'JSON 格式正確 ✓';
+    setTimeout(() => { errEl.textContent = ''; errEl.style.color = '#e74c3c'; }, 2000);
+  } catch (e) {
+    errEl.style.color = '#e74c3c';
+    errEl.textContent = 'JSON 格式錯誤：' + e.message;
+  }
+});
+
 // ===== Cases =====
 let casesData = [];
 
@@ -674,6 +790,7 @@ const sectionNames = {
   news: '律師動態',
   contact: '聯絡律師',
   footer: 'Footer',
+  seo: 'SEO 設定',
 };
 
 const collectors = {
@@ -684,6 +801,7 @@ const collectors = {
   news: collectNews,
   contact: collectContact,
   footer: collectFooter,
+  seo: collectSeo,
 };
 
 document.querySelectorAll('.btn-save').forEach(btn => {
@@ -694,9 +812,25 @@ document.querySelectorAll('.btn-save').forEach(btn => {
     btn.disabled = true;
     btn.textContent = '儲存中...';
     const body = collector();
-    const res = await api(`/api/content/${section}`, { method: 'PUT', body });
+    // collectSeo 回傳 null 表示 JSON-LD 驗證失敗
+    if (body === null) {
+      btn.disabled = false;
+      btn.textContent = '儲存';
+      return;
+    }
+    // SEO section 需要根據下拉選擇決定實際 section name
+    const actualSection = section === 'seo'
+      ? `seo-${document.getElementById('seo-page-select').value}`
+      : section;
+    const res = await api(`/api/content/${actualSection}`, { method: 'PUT', body });
     if (res.ok) {
-      contentData[section] = body;
+      if (section === 'seo') {
+        const page = document.getElementById('seo-page-select').value;
+        seoDataCache[page] = body;
+        contentData[actualSection] = body;
+      } else {
+        contentData[section] = body;
+      }
       toast(`${sectionNames[section] || section} 已儲存`);
     } else {
       toast('儲存失敗', 'error');

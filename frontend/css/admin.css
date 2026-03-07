@@ -130,7 +130,8 @@ body {
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group input[type="email"],
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid var(--border);
@@ -141,10 +142,56 @@ body {
   transition: border 0.2s;
   background: var(--card);
 }
-.form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent); }
+.form-group select { cursor: pointer; }
 .form-group textarea { min-height: 80px; resize: vertical; }
 
 .inline-fields { display: flex; flex-direction: column; gap: 8px; }
+
+/* Tooltip */
+.tooltip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--border);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: help;
+  position: relative;
+  margin-left: 4px;
+  vertical-align: middle;
+  line-height: 1;
+}
+.tooltip-icon::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  width: 260px;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 500;
+}
+.tooltip-icon:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
 
 /* 按鈕 */
 .btn-sm {
@@ -375,4 +422,5 @@ body {
   .admin-tabs { padding: 0 16px; }
   .tab { padding: 12px 14px; font-size: 0.78rem; }
   .login-card { margin: 16px; padding: 32px 24px; }
+  .tooltip-icon::after { width: 200px; }
 }

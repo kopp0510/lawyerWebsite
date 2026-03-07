@@ -17,6 +17,46 @@ const CASES_DATA_FALLBACK = [
   { name: '帝旺數位刀具有限公司', img: '', category: '製造業', desc: '協助精密製造業法律顧問服務、技術授權合約、專利保護及供應鏈法律風險管理。' },
 ];
 
+// ===== SEO 動態套用 =====
+function setMetaContent(attr, value, content) {
+  const el = document.querySelector(`meta[${attr}="${value}"]`);
+  if (el) el.setAttribute('content', content);
+}
+
+function applySeo(data) {
+  if (!data) return;
+  const m = data.meta || {};
+  if (m.title) document.title = m.title;
+  if (m.description) setMetaContent('name', 'description', m.description);
+  if (m.keywords) setMetaContent('name', 'keywords', m.keywords);
+  if (data.canonical) {
+    const link = document.querySelector('link[rel="canonical"]');
+    if (link) link.setAttribute('href', data.canonical);
+  }
+  const og = data.og || {};
+  if (og.type) setMetaContent('property', 'og:type', og.type);
+  if (og.title) setMetaContent('property', 'og:title', og.title);
+  if (og.description) setMetaContent('property', 'og:description', og.description);
+  if (og.image) setMetaContent('property', 'og:image', og.image);
+  if (og.url) setMetaContent('property', 'og:url', og.url);
+  if (og.locale) setMetaContent('property', 'og:locale', og.locale);
+  if (og.siteName) setMetaContent('property', 'og:site_name', og.siteName);
+  const tw = data.twitter || {};
+  if (tw.card) setMetaContent('name', 'twitter:card', tw.card);
+  if (tw.title) setMetaContent('name', 'twitter:title', tw.title);
+  if (tw.description) setMetaContent('name', 'twitter:description', tw.description);
+  if (tw.image) setMetaContent('name', 'twitter:image', tw.image);
+  if (data.jsonLd) {
+    let script = document.querySelector('script[type="application/ld+json"]');
+    if (!script) {
+      script = document.createElement('script');
+      script.type = 'application/ld+json';
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(data.jsonLd);
+  }
+}
+
 // 從 API 載入所有 section 內容
 async function loadContent() {
   try {
@@ -34,6 +74,9 @@ async function loadContent() {
       renderNews(content.news);
       renderContact(content.contact);
       renderFooter(content.footer);
+      // 根據當前頁面套用對應 SEO 資料
+      const seoSection = window.location.pathname.includes('cases') ? 'seo-cases' : 'seo-index';
+      applySeo(content[seoSection]);
     }
     if (casesRes.ok) {
       const cases = await casesRes.json();
