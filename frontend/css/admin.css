@@ -127,6 +127,12 @@ body {
   color: var(--text-secondary);
   margin-bottom: 6px;
 }
+.hint {
+  font-size: 0.78rem;
+  color: var(--text-light, #999);
+  margin: -2px 0 8px;
+  font-weight: 400;
+}
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group input[type="email"],
