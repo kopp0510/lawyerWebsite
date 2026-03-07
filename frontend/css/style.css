@@ -733,9 +733,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: var(--transition);
 }
 .social-links a:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
+  transform: scale(1.12);
 }
 
 /* ========== CONTACT ========== */
@@ -1044,24 +1042,37 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .hamburger { display: flex; }
   .nav-links {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background: rgba(17,17,24,0.97);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     flex-direction: column;
-    padding: 100px 32px 40px;
+    justify-content: center;
+    align-items: center;
+    padding: 0 32px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 0;
     opacity: 0;
     visibility: hidden;
     transition: all 0.35s ease;
+    z-index: 999;
   }
   .nav-links.open { opacity: 1; visibility: visible; }
   .nav-links a {
     display: block;
+    width: 100%;
+    max-width: 320px;
     padding: 16px 0;
     font-size: 1.05rem;
     color: rgba(255,255,255,0.7) !important;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     letter-spacing: 2px;
+    text-align: center;
   }
   .nav-links a:hover { color: #fff !important; }
   .nav-links a::after { display: none; }
