@@ -144,7 +144,7 @@ function renderCarousel(cases, displayCount) {
   const shown = cases.slice(0, displayCount);
   track.innerHTML = shown.map((c, i) => {
     const imgSrc = getImageSrc(c);
-    return `<div class="carousel-slide"><div class="case-card" data-case-index="${i}"><img class="case-card-img" src="${imgSrc}" alt="${c.name}"><div class="case-card-body"><h4>${c.name}</h4></div></div></div>`;
+    return `<div class="carousel-slide"><div class="case-card" data-case-index="${i}"><img class="case-card-img" src="${imgSrc}" alt="${c.name}" width="300" height="180" loading="lazy"><div class="case-card-body"><h4>${c.name}</h4></div></div></div>`;
   }).join('');
   initCarousel();
   bindCaseCards();
@@ -155,7 +155,7 @@ function renderCasesPage(cases) {
   if (!grid) return;
   grid.innerHTML = cases.map((c, i) => {
     const imgSrc = getImageSrc(c);
-    return `<div class="case-card fade-in" data-case-index="${i}"><img class="case-card-img" src="${imgSrc}" alt="${c.name}"><div class="case-card-body"><h4>${c.name}</h4></div></div>`;
+    return `<div class="case-card fade-in" data-case-index="${i}"><img class="case-card-img" src="${imgSrc}" alt="${c.name}" width="300" height="180" loading="lazy"><div class="case-card-body"><h4>${c.name}</h4></div></div>`;
   }).join('');
   grid.querySelectorAll('.fade-in').forEach(el => { if (window._obs) window._obs.observe(el); });
   bindCaseCards();
@@ -215,6 +215,19 @@ function renderNews(data) {
       })
       .join('');
   }
+  renderLineFloat(data.socialLinks);
+}
+
+function renderLineFloat(socialLinks) {
+  const lineFloat = document.getElementById('line-float');
+  if (!lineFloat || !socialLinks) return;
+  const lineVal = parseSocialValue(socialLinks.line);
+  if (!lineVal.url || lineVal.url === '#' || !lineVal.url.trim()) return;
+  const inner = lineVal.iconId
+    ? `<img src="${API_BASE}/api/images/${lineVal.iconId}" alt="LINE">`
+    : '<svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M12 2C6.48 2 2 5.93 2 10.71c0 4.28 3.77 7.86 8.87 8.54.34.07.82.23.94.52.1.27.07.68.03.95l-.15.91c-.05.27-.21 1.06.93.58s6.17-3.63 8.42-6.22C22.94 13.78 22 12.32 22 10.71 22 5.93 17.52 2 12 2z"/></svg>';
+  lineFloat.innerHTML = `<a href="${lineVal.url}" target="_blank" aria-label="LINE 諮詢">${inner}</a>`;
+  lineFloat.classList.add('visible');
 }
 
 function renderContact(data) {
