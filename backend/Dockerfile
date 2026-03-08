@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD sh -c "npx prisma migrate deploy && node prisma/seed.js && node src/index.js"
+CMD sh -c "npx prisma migrate deploy && if [ \"$SKIP_SEED\" != 'true' ]; then node prisma/seed.js; fi && node src/index.js"

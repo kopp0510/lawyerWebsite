@@ -17,16 +17,30 @@ async function importImage(filePath, filename) {
 }
 
 async function main() {
-  // 建立管理員帳號
+  // 診斷 log：確認連到哪個 DB、現有資料量
+  const userCount = await prisma.user.count();
+  const sectionCount = await prisma.sectionContent.count();
+  const caseCount = await prisma.case.count();
+  const imageCount = await prisma.image.count();
+  console.log(`[Seed] DB 狀態 — Users: ${userCount}, Sections: ${sectionCount}, Cases: ${caseCount}, Images: ${imageCount}`);
+  try {
+    const dbUrl = new URL(process.env.DATABASE_URL);
+    console.log(`[Seed] DATABASE_URL host: ${dbUrl.host}, database: ${dbUrl.pathname}`);
+  } catch {
+    console.log('[Seed] DATABASE_URL 無法解析');
+  }
+
+  // 建立管理員帳號（已存在則跳過，不覆寫密碼）
   const email = process.env.ADMIN_EMAIL || 'admin@example.com';
   const password = process.env.ADMIN_PASSWORD || 'changeme123';
-  const hashed = await bcrypt.hash(password, 10);
-  await prisma.user.upsert({
-    where: { email },
-    update: { password: hashed },
-    create: { email, password: hashed },
-  });
-  console.log(`管理員帳號已建立: ${email}`);
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (!existingUser) {
+    const hashed = await bcrypt.hash(password, 10);
+    await prisma.user.create({ data: { email, password: hashed } });
+    console.log(`[Seed] 管理員帳號已建立: ${email}`);
+  } else {
+    console.log(`[Seed] 管理員帳號已存在: ${email}，跳過`);
+  }
 
   // 建立全站設定
   await prisma.siteSettings.upsert({
@@ -40,49 +54,71 @@ async function main() {
     ? '/app/frontend/scraped'
     : path.join(__dirname, '../../frontend/scraped');
 
-  // Hero section — 匯入背景圖
-  const heroBgImageId = await importImage(
-    path.join(scrapedBase, '01_網站首頁/images/image_005.jpg'), 'hero_bg.jpg'
-  );
-  await upsertSection('hero', {
-    label: 'Law Office',
-    title: '劉鈞豪 律師事務所',
-    tagline: '專業法律服務 · SINCE 2018',
-    ctaText: '聯絡律師 →',
-    bgImageId: heroBgImageId,
-    bgImage: 'scraped/01_網站首頁/images/image_005.jpg',
-  });
+  // Hero section — 先檢查存在再匯入圖片，避免建立孤立圖片記錄
+  const heroExists = await prisma.sectionContent.findUnique({ where: { section: 'hero' } });
+  if (!heroExists) {
+    const heroBgImageId = await importImage(
+      path.join(scrapedBase, '01_網站首頁/images/image_005.jpg'), 'hero_bg.jpg'
+    );
+    await prisma.sectionContent.create({
+      data: {
+        section: 'hero',
+        content: {
+          label: 'Law Office',
+          title: '劉鈞豪 律師事務所',
+          tagline: '專業法律服務 · SINCE 2018',
+          ctaText: '聯絡律師 →',
+          bgImageId: heroBgImageId,
+          bgImage: 'scraped/01_網站首頁/images/image_005.jpg',
+        },
+      },
+    });
+    console.log('[Seed] 區塊 "hero" 已建立');
+  } else {
+    console.log('[Seed] 區塊 "hero" 已存在，跳過');
+  }
 
-  // About section — 匯入律師照片
-  const aboutPhotoImageId = await importImage(
-    path.join(scrapedBase, '02_關於律師/images/image_001.jpg'), 'about_photo.jpg'
-  );
-  await upsertSection('about', {
-    name: '劉鈞豪',
-    position: '主持律師 · Director',
-    photoImageId: aboutPhotoImageId,
-    photo: 'scraped/02_關於律師/images/image_001.jpg',
-    paragraphs: [
-      '成立於民國107年，承辦民事、刑事執行案件，協助企業進行商業事件、勞資事件之處理。',
-      '並受聘擔任多家企業法律顧問，提供即時法律服務，同時受邀擔任消費者保護法、生活法律講座、企業法律風險管理、校園法律教育及長照人員培訓等課程之講師。',
-      '致力於研究法學專業，永續經營及創造價值之態度，以專業服務客戶。',
-    ],
-    tags: ['民事糾紛', '家事案件', '刑事案件', '智慧財產', '民事執行', '勞資爭議', '消費爭議', '保險爭議', '信託法務', '碳法事務'],
-    education: [
-      '逢甲大學 財經法律研究所 碩士',
-      '銘傳大學 財金法律學系 學士',
-      '律師高考及格',
-      '勞資事務師',
-    ],
-    experience: [
-      '全國律師聯合會 會員代表',
-      '全國律師聯合會 信託委員會委員',
-      '彰化律師公會 理事',
-      '彰化律師公會 秘書長',
-      '台中律師公會 副秘書長',
-      '111、112 經濟部中小企業處榮譽律師',
-    ],
-  });
+  // About section — 先檢查存在再匯入圖片
+  const aboutExists = await prisma.sectionContent.findUnique({ where: { section: 'about' } });
+  if (!aboutExists) {
+    const aboutPhotoImageId = await importImage(
+      path.join(scrapedBase, '02_關於律師/images/image_001.jpg'), 'about_photo.jpg'
+    );
+    await prisma.sectionContent.create({
+      data: {
+        section: 'about',
+        content: {
+          name: '劉鈞豪',
+          position: '主持律師 · Director',
+          photoImageId: aboutPhotoImageId,
+          photo: 'scraped/02_關於律師/images/image_001.jpg',
+          paragraphs: [
+            '成立於民國107年，承辦民事、刑事執行案件，協助企業進行商業事件、勞資事件之處理。',
+            '並受聘擔任多家企業法律顧問，提供即時法律服務，同時受邀擔任消費者保護法、生活法律講座、企業法律風險管理、校園法律教育及長照人員培訓等課程之講師。',
+            '致力於研究法學專業，永續經營及創造價值之態度，以專業服務客戶。',
+          ],
+          tags: ['民事糾紛', '家事案件', '刑事案件', '智慧財產', '民事執行', '勞資爭議', '消費爭議', '保險爭議', '信託法務', '碳法事務'],
+          education: [
+            '逢甲大學 財經法律研究所 碩士',
+            '銘傳大學 財金法律學系 學士',
+            '律師高考及格',
+            '勞資事務師',
+          ],
+          experience: [
+            '全國律師聯合會 會員代表',
+            '全國律師聯合會 信託委員會委員',
+            '彰化律師公會 理事',
+            '彰化律師公會 秘書長',
+            '台中律師公會 副秘書長',
+            '111、112 經濟部中小企業處榮譽律師',
+          ],
+        },
+      },
+    });
+    console.log('[Seed] 區塊 "about" 已建立');
+  } else {
+    console.log('[Seed] 區塊 "about" 已存在，跳過');
+  }
 
   // Services section
   await upsertSection('services', {
@@ -115,29 +151,40 @@ async function main() {
     note: '以上收費僅供參考，實際報價仍應視委任內容之情況而定',
   });
 
-  // News section — 匯入動態照片
-  const newsPhotoImageId = await importImage(
-    path.join(scrapedBase, '06_律師動態/images/image_001.jpg'), 'news_photo.jpg'
-  );
-  await upsertSection('news', {
-    photoImageId: newsPhotoImageId,
-    photo: 'scraped/06_律師動態/images/image_001.jpg',
-    title: '現任職務與榮譽',
-    items: [
-      '社團法人台中律師公會 副秘書長',
-      '社團法人彰化律師公會 理事',
-      '全國律師聯合會 會員代表',
-      '111 經濟部中小企業處 榮譽律師',
-      '112 經濟部中小企業處 榮譽律師',
-      '海洋公務人員福利委員會 法律顧問',
-    ],
-    socialLinks: {
-      linkedin: { url: '#', iconId: null },
-      instagram: { url: '#', iconId: null },
-      line: { url: '#', iconId: null },
-      facebook: { url: '#', iconId: null },
-    },
-  });
+  // News section — 先檢查存在再匯入圖片
+  const newsExists = await prisma.sectionContent.findUnique({ where: { section: 'news' } });
+  if (!newsExists) {
+    const newsPhotoImageId = await importImage(
+      path.join(scrapedBase, '06_律師動態/images/image_001.jpg'), 'news_photo.jpg'
+    );
+    await prisma.sectionContent.create({
+      data: {
+        section: 'news',
+        content: {
+          photoImageId: newsPhotoImageId,
+          photo: 'scraped/06_律師動態/images/image_001.jpg',
+          title: '現任職務與榮譽',
+          items: [
+            '社團法人台中律師公會 副秘書長',
+            '社團法人彰化律師公會 理事',
+            '全國律師聯合會 會員代表',
+            '111 經濟部中小企業處 榮譽律師',
+            '112 經濟部中小企業處 榮譽律師',
+            '海洋公務人員福利委員會 法律顧問',
+          ],
+          socialLinks: {
+            linkedin: { url: '#', iconId: null },
+            instagram: { url: '#', iconId: null },
+            line: { url: '#', iconId: null },
+            facebook: { url: '#', iconId: null },
+          },
+        },
+      },
+    });
+    console.log('[Seed] 區塊 "news" 已建立');
+  } else {
+    console.log('[Seed] 區塊 "news" 已存在，跳過');
+  }
 
   // Contact section
   await upsertSection('contact', {
@@ -309,22 +356,22 @@ async function main() {
         data: { name: c.name, category: c.category, desc: c.desc, imageId, sortOrder: i + 1 },
       });
     }
-    console.log(`已匯入 ${casesData.length} 筆案例`);
+    console.log(`[Seed] 已匯入 ${casesData.length} 筆案例`);
   } else {
-    console.log(`案例資料已存在 (${existingCases} 筆)，跳過匯入`);
+    console.log(`[Seed] 案例資料已存在 (${existingCases} 筆)，跳過匯入`);
   }
 
-  console.log('Seed 完成');
+  console.log('[Seed] 完成');
 }
 
 async function upsertSection(section, content) {
   const existing = await prisma.sectionContent.findUnique({ where: { section } });
   if (existing) {
-    console.log(`區塊 "${section}" 已存在，跳過`);
+    console.log(`[Seed] 區塊 "${section}" 已存在，跳過`);
     return;
   }
   await prisma.sectionContent.create({ data: { section, content } });
-  console.log(`區塊 "${section}" 已建立`);
+  console.log(`[Seed] 區塊 "${section}" 已建立`);
 }
 
 main()
