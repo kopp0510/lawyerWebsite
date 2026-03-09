@@ -33,19 +33,18 @@ function applySeo(data) {
     const link = document.querySelector('link[rel="canonical"]');
     if (link) link.setAttribute('href', data.canonical);
   }
+  // OG meta tags
   const og = data.og || {};
-  if (og.type) setMetaContent('property', 'og:type', og.type);
-  if (og.title) setMetaContent('property', 'og:title', og.title);
-  if (og.description) setMetaContent('property', 'og:description', og.description);
-  if (og.image) setMetaContent('property', 'og:image', og.image);
-  if (og.url) setMetaContent('property', 'og:url', og.url);
-  if (og.locale) setMetaContent('property', 'og:locale', og.locale);
-  if (og.siteName) setMetaContent('property', 'og:site_name', og.siteName);
+  const ogFields = { type: 'og:type', title: 'og:title', description: 'og:description', image: 'og:image', url: 'og:url', locale: 'og:locale', siteName: 'og:site_name' };
+  Object.entries(ogFields).forEach(([key, prop]) => {
+    if (og[key]) setMetaContent('property', prop, og[key]);
+  });
+  // Twitter meta tags
   const tw = data.twitter || {};
-  if (tw.card) setMetaContent('name', 'twitter:card', tw.card);
-  if (tw.title) setMetaContent('name', 'twitter:title', tw.title);
-  if (tw.description) setMetaContent('name', 'twitter:description', tw.description);
-  if (tw.image) setMetaContent('name', 'twitter:image', tw.image);
+  const twFields = { card: 'twitter:card', title: 'twitter:title', description: 'twitter:description', image: 'twitter:image' };
+  Object.entries(twFields).forEach(([key, prop]) => {
+    if (tw[key]) setMetaContent('name', prop, tw[key]);
+  });
   if (data.jsonLd) {
     let script = document.querySelector('script[type="application/ld+json"]');
     if (!script) {

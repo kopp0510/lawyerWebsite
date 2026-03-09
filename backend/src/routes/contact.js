@@ -1,9 +1,9 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../lib/prisma');
+const asyncHandler = require('../lib/asyncHandler');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // 速率限制：同一 IP 每 10 分鐘最多 3 則留言
 const rateMap = new Map();
@@ -17,14 +17,6 @@ function checkRateLimit(ip) {
   if (valid.length >= RATE_LIMIT) return false;
   valid.push(now);
   return true;
-}
-
-// 共用錯誤處理包裝
-function asyncHandler(fn) {
-  return (req, res) => fn(req, res).catch(err => {
-    console.error(`${req.method} ${req.originalUrl} error:`, err);
-    res.status(500).json({ error: '伺服器錯誤' });
-  });
 }
 
 // 取得請求的客戶端 IP

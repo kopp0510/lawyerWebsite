@@ -25,6 +25,51 @@ function toast(msg, type = 'success') {
   setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+// 表單填入/收集工具函式
+function fillForm(mapping, data) {
+  for (const [id, key] of Object.entries(mapping)) {
+    const el = document.getElementById(id);
+    if (el) el.value = data[key] || '';
+  }
+}
+
+function collectForm(mapping) {
+  const result = {};
+  for (const [id, key] of Object.entries(mapping)) {
+    result[key] = document.getElementById(id).value;
+  }
+  return result;
+}
+
+// 通用卡片新增函式
+function addCard(containerId, label, fieldsHtml, data) {
+  const container = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = 'card-item';
+  div.innerHTML = `
+    <div class="card-header"><strong>${label}</strong><button class="btn-sm btn-danger btn-remove-card">刪除</button></div>
+    <div class="card-fields">${fieldsHtml}</div>
+  `;
+  div.querySelector('.btn-remove-card').addEventListener('click', () => div.remove());
+  container.appendChild(div);
+  return div;
+}
+
+// JSON 驗證工具函式
+function parseJsonField(inputId, errorId) {
+  const str = document.getElementById(inputId).value.trim();
+  const errEl = document.getElementById(errorId);
+  if (!str) { errEl.textContent = ''; return { value: null, ok: true }; }
+  try {
+    const value = JSON.parse(str);
+    errEl.textContent = '';
+    return { value, ok: true };
+  } catch (e) {
+    errEl.textContent = 'JSON 格式錯誤：' + e.message;
+    return { value: null, ok: false };
+  }
+}
+
 // 設定圖片預覽（依 imageId 或 fallback 路徑）
 function setImagePreview(previewId, hiddenId, imageId, fallbackPath) {
   if (imageId) {
@@ -123,31 +168,28 @@ async function loadAllData() {
 }
 
 // ===== Hero =====
+const heroMapping = { 'hero-title': 'title', 'hero-tagline': 'tagline', 'hero-label': 'label', 'hero-ctaText': 'ctaText' };
+
 function fillHero(data) {
   if (!data) return;
-  document.getElementById('hero-title').value = data.title || '';
-  document.getElementById('hero-tagline').value = data.tagline || '';
-  document.getElementById('hero-label').value = data.label || '';
-  document.getElementById('hero-ctaText').value = data.ctaText || '';
+  fillForm(heroMapping, data);
   setImagePreview('hero-bg-preview', 'hero-bgImageId', data.bgImageId, data.bgImage);
 }
 
 function collectHero() {
   return {
-    title: document.getElementById('hero-title').value,
-    tagline: document.getElementById('hero-tagline').value,
-    label: document.getElementById('hero-label').value,
-    ctaText: document.getElementById('hero-ctaText').value,
+    ...collectForm(heroMapping),
     bgImage: contentData.hero?.bgImage || '',
     bgImageId: parseInt(document.getElementById('hero-bgImageId').value) || null,
   };
 }
 
 // ===== About =====
+const aboutMapping = { 'about-name': 'name', 'about-position': 'position' };
+
 function fillAbout(data) {
   if (!data) return;
-  document.getElementById('about-name').value = data.name || '';
-  document.getElementById('about-position').value = data.position || '';
+  fillForm(aboutMapping, data);
   setImagePreview('about-photo-preview', 'about-photoImageId', data.photoImageId, data.photo);
   fillDynamicList('about-paragraphs', data.paragraphs || [], 'textarea');
   fillDynamicList('about-tags', data.tags || [], 'input');
@@ -157,8 +199,7 @@ function fillAbout(data) {
 
 function collectAbout() {
   return {
-    name: document.getElementById('about-name').value,
-    position: document.getElementById('about-position').value,
+    ...collectForm(aboutMapping),
     photo: contentData.about?.photo || '',
     photoImageId: parseInt(document.getElementById('about-photoImageId').value) || null,
     paragraphs: collectDynamicList('about-paragraphs'),
@@ -177,19 +218,11 @@ function fillServices(data) {
 }
 
 function addServiceCard(card = { icon: '', title: '', desc: '' }) {
-  const container = document.getElementById('services-cards');
-  const div = document.createElement('div');
-  div.className = 'card-item';
-  div.innerHTML = `
-    <div class="card-header"><strong>服務卡片</strong><button class="btn-sm btn-danger btn-remove-card">刪除</button></div>
-    <div class="card-fields">
-      <div><label>Icon</label><input type="text" class="svc-icon" value="${card.icon}"></div>
-      <div><label>標題</label><input type="text" class="svc-title" value="${card.title}"></div>
-      <div><label>描述</label><textarea class="svc-desc">${card.desc}</textarea></div>
-    </div>
-  `;
-  div.querySelector('.btn-remove-card').addEventListener('click', () => div.remove());
-  container.appendChild(div);
+  addCard('services-cards', '服務卡片', `
+    <div><label>Icon</label><input type="text" class="svc-icon" value="${card.icon}"></div>
+    <div><label>標題</label><input type="text" class="svc-title" value="${card.title}"></div>
+    <div><label>描述</label><textarea class="svc-desc">${card.desc}</textarea></div>
+  `);
 }
 
 document.getElementById('add-service-card').addEventListener('click', () => addServiceCard());
@@ -207,11 +240,11 @@ function collectServices() {
 }
 
 // ===== Pricing =====
+const pricingMapping = { 'pricing-plansTitle': 'plansTitle', 'pricing-plansSubtitle': 'plansSubtitle', 'pricing-note': 'note' };
+
 function fillPricing(data) {
   if (!data) return;
-  document.getElementById('pricing-plansTitle').value = data.plansTitle || '';
-  document.getElementById('pricing-plansSubtitle').value = data.plansSubtitle || '';
-  document.getElementById('pricing-note').value = data.note || '';
+  fillForm(pricingMapping, data);
 
   const rowsContainer = document.getElementById('pricing-table-rows');
   rowsContainer.innerHTML = '';
@@ -223,18 +256,10 @@ function fillPricing(data) {
 }
 
 function addPricingRow(row = { service: '', fee: '' }) {
-  const container = document.getElementById('pricing-table-rows');
-  const div = document.createElement('div');
-  div.className = 'card-item';
-  div.innerHTML = `
-    <div class="card-header"><strong>費用項目</strong><button class="btn-sm btn-danger btn-remove-card">刪除</button></div>
-    <div class="card-fields">
-      <div><label>服務項目</label><input type="text" class="pr-service" value="${row.service}"></div>
-      <div><label>費用</label><input type="text" class="pr-fee" value="${row.fee}"></div>
-    </div>
-  `;
-  div.querySelector('.btn-remove-card').addEventListener('click', () => div.remove());
-  container.appendChild(div);
+  addCard('pricing-table-rows', '費用項目', `
+    <div><label>服務項目</label><input type="text" class="pr-service" value="${row.service}"></div>
+    <div><label>費用</label><input type="text" class="pr-fee" value="${row.fee}"></div>
+  `);
 }
 
 function addPricingPlan(plan = { name: '', price: '', unit: '/ 年', featured: false, features: [] }) {
@@ -295,13 +320,7 @@ function collectPricing() {
       features,
     });
   });
-  return {
-    table,
-    plans,
-    plansTitle: document.getElementById('pricing-plansTitle').value,
-    plansSubtitle: document.getElementById('pricing-plansSubtitle').value,
-    note: document.getElementById('pricing-note').value,
-  };
+  return { table, plans, ...collectForm(pricingMapping) };
 }
 
 // ===== News =====
@@ -341,12 +360,11 @@ function collectNews() {
 }
 
 // ===== Contact =====
+const contactMapping = { 'contact-address': 'address', 'contact-phone': 'phone', 'contact-email': 'email', 'contact-mapUrl': 'mapUrl' };
+
 function fillContact(data) {
   if (!data) return;
-  document.getElementById('contact-address').value = data.address || '';
-  document.getElementById('contact-phone').value = data.phone || '';
-  document.getElementById('contact-email').value = data.email || '';
-  document.getElementById('contact-mapUrl').value = data.mapUrl || '';
+  fillForm(contactMapping, data);
   if (data.mapUrl) {
     document.getElementById('contact-map-iframe').src = data.mapUrl;
     document.getElementById('contact-map-preview').style.display = '';
@@ -354,12 +372,7 @@ function fillContact(data) {
 }
 
 function collectContact() {
-  return {
-    address: document.getElementById('contact-address').value,
-    phone: document.getElementById('contact-phone').value,
-    email: document.getElementById('contact-email').value,
-    mapUrl: document.getElementById('contact-mapUrl').value,
-  };
+  return collectForm(contactMapping);
 }
 
 // ===== 客戶留言 =====
@@ -420,31 +433,21 @@ async function deleteMessage(id) {
 }
 
 // ===== Footer =====
+const footerMapping = { 'footer-firmName': 'firmName', 'footer-since': 'since', 'footer-address': 'address', 'footer-phone': 'phone', 'footer-copyright': 'copyright' };
+
 function fillFooter(data) {
   if (!data) return;
-  document.getElementById('footer-firmName').value = data.firmName || '';
-  document.getElementById('footer-since').value = data.since || '';
-  document.getElementById('footer-address').value = data.address || '';
-  document.getElementById('footer-phone').value = data.phone || '';
-  document.getElementById('footer-copyright').value = data.copyright || '';
+  fillForm(footerMapping, data);
   const container = document.getElementById('footer-institutions');
   container.innerHTML = '';
   (data.institutions || []).forEach(inst => addFooterInstitution(inst));
 }
 
 function addFooterInstitution(inst = { name: '', url: '' }) {
-  const container = document.getElementById('footer-institutions');
-  const div = document.createElement('div');
-  div.className = 'card-item';
-  div.innerHTML = `
-    <div class="card-header"><strong>機構連結</strong><button class="btn-sm btn-danger btn-remove-card">刪除</button></div>
-    <div class="card-fields">
-      <div><label>名稱</label><input type="text" class="inst-name" value="${inst.name}"></div>
-      <div><label>URL</label><input type="text" class="inst-url" value="${inst.url}"></div>
-    </div>
-  `;
-  div.querySelector('.btn-remove-card').addEventListener('click', () => div.remove());
-  container.appendChild(div);
+  addCard('footer-institutions', '機構連結', `
+    <div><label>名稱</label><input type="text" class="inst-name" value="${inst.name}"></div>
+    <div><label>URL</label><input type="text" class="inst-url" value="${inst.url}"></div>
+  `);
 }
 
 document.getElementById('add-footer-institution').addEventListener('click', () => addFooterInstitution());
@@ -457,91 +460,43 @@ function collectFooter() {
       url: item.querySelector('.inst-url').value,
     });
   });
-  return {
-    firmName: document.getElementById('footer-firmName').value,
-    since: document.getElementById('footer-since').value,
-    address: document.getElementById('footer-address').value,
-    phone: document.getElementById('footer-phone').value,
-    copyright: document.getElementById('footer-copyright').value,
-    institutions,
-  };
+  return { ...collectForm(footerMapping), institutions };
 }
 
 // ===== SEO =====
+const seoMetaMapping = { 'seo-meta-title': 'title', 'seo-meta-description': 'description', 'seo-meta-keywords': 'keywords' };
+const seoOgMapping = { 'seo-og-type': 'type', 'seo-og-title': 'title', 'seo-og-description': 'description', 'seo-og-image': 'image', 'seo-og-url': 'url', 'seo-og-locale': 'locale', 'seo-og-siteName': 'siteName' };
+const seoTwitterMapping = { 'seo-twitter-card': 'card', 'seo-twitter-title': 'title', 'seo-twitter-description': 'description', 'seo-twitter-image': 'image' };
+
 function fillSeo(data) {
   if (!data) {
-    // 清空表單
-    ['seo-meta-title', 'seo-meta-description', 'seo-meta-keywords', 'seo-canonical',
-     'seo-og-type', 'seo-og-title', 'seo-og-description', 'seo-og-image', 'seo-og-url', 'seo-og-locale', 'seo-og-siteName',
-     'seo-twitter-title', 'seo-twitter-description', 'seo-twitter-image',
-     'seo-jsonld'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
+    fillForm(seoMetaMapping, {});
+    fillForm(seoOgMapping, {});
+    fillForm(seoTwitterMapping, {});
+    document.getElementById('seo-canonical').value = '';
     document.getElementById('seo-twitter-card').value = 'summary';
+    document.getElementById('seo-jsonld').value = '';
     updateSeoCharCounts();
     return;
   }
-  const m = data.meta || {};
-  document.getElementById('seo-meta-title').value = m.title || '';
-  document.getElementById('seo-meta-description').value = m.description || '';
-  document.getElementById('seo-meta-keywords').value = m.keywords || '';
+  fillForm(seoMetaMapping, data.meta || {});
   document.getElementById('seo-canonical').value = data.canonical || '';
-
-  const og = data.og || {};
-  document.getElementById('seo-og-type').value = og.type || '';
-  document.getElementById('seo-og-title').value = og.title || '';
-  document.getElementById('seo-og-description').value = og.description || '';
-  document.getElementById('seo-og-image').value = og.image || '';
-  document.getElementById('seo-og-url').value = og.url || '';
-  document.getElementById('seo-og-locale').value = og.locale || '';
-  document.getElementById('seo-og-siteName').value = og.siteName || '';
-
-  const tw = data.twitter || {};
-  document.getElementById('seo-twitter-card').value = tw.card || 'summary';
-  document.getElementById('seo-twitter-title').value = tw.title || '';
-  document.getElementById('seo-twitter-description').value = tw.description || '';
-  document.getElementById('seo-twitter-image').value = tw.image || '';
-
+  fillForm(seoOgMapping, data.og || {});
+  fillForm(seoTwitterMapping, data.twitter || {});
+  if (!(data.twitter || {}).card) document.getElementById('seo-twitter-card').value = 'summary';
   document.getElementById('seo-jsonld').value = data.jsonLd ? JSON.stringify(data.jsonLd, null, 2) : '';
   document.getElementById('seo-jsonld-error').textContent = '';
   updateSeoCharCounts();
 }
 
 function collectSeo() {
-  const jsonLdStr = document.getElementById('seo-jsonld').value.trim();
-  let jsonLd = null;
-  if (jsonLdStr) {
-    try {
-      jsonLd = JSON.parse(jsonLdStr);
-    } catch (e) {
-      document.getElementById('seo-jsonld-error').textContent = 'JSON 格式錯誤：' + e.message;
-      return null;
-    }
-  }
-  document.getElementById('seo-jsonld-error').textContent = '';
+  const { value: jsonLd, ok } = parseJsonField('seo-jsonld', 'seo-jsonld-error');
+  if (!ok) return null;
   return {
-    meta: {
-      title: document.getElementById('seo-meta-title').value,
-      description: document.getElementById('seo-meta-description').value,
-      keywords: document.getElementById('seo-meta-keywords').value,
-    },
+    meta: collectForm(seoMetaMapping),
     canonical: document.getElementById('seo-canonical').value,
-    og: {
-      type: document.getElementById('seo-og-type').value,
-      title: document.getElementById('seo-og-title').value,
-      description: document.getElementById('seo-og-description').value,
-      image: document.getElementById('seo-og-image').value,
-      url: document.getElementById('seo-og-url').value,
-      locale: document.getElementById('seo-og-locale').value,
-      siteName: document.getElementById('seo-og-siteName').value,
-    },
-    twitter: {
-      card: document.getElementById('seo-twitter-card').value,
-      title: document.getElementById('seo-twitter-title').value,
-      description: document.getElementById('seo-twitter-description').value,
-      image: document.getElementById('seo-twitter-image').value,
-    },
+    og: collectForm(seoOgMapping),
+    twitter: collectForm(seoTwitterMapping),
     jsonLd,
   };
 }
@@ -564,17 +519,14 @@ document.getElementById('seo-meta-description').addEventListener('input', update
 
 // JSON-LD 驗證按鈕
 document.getElementById('seo-jsonld-validate').addEventListener('click', () => {
-  const str = document.getElementById('seo-jsonld').value.trim();
+  const { ok } = parseJsonField('seo-jsonld', 'seo-jsonld-error');
   const errEl = document.getElementById('seo-jsonld-error');
-  if (!str) { errEl.textContent = ''; return; }
-  try {
-    JSON.parse(str);
+  if (ok && document.getElementById('seo-jsonld').value.trim()) {
     errEl.style.color = '#27ae60';
     errEl.textContent = 'JSON 格式正確 ✓';
     setTimeout(() => { errEl.textContent = ''; errEl.style.color = '#e74c3c'; }, 2000);
-  } catch (e) {
+  } else if (!ok) {
     errEl.style.color = '#e74c3c';
-    errEl.textContent = 'JSON 格式錯誤：' + e.message;
   }
 });
 

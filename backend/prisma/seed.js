@@ -5,6 +5,13 @@ const path = require('path');
 
 const prisma = new PrismaClient();
 
+// 事務所基本資訊常數
+const FIRM_INFO = {
+  address: '403 台中市西區市府路 1-1 號',
+  phone: '04-22220093',
+  email: 'info@mysite.com',
+};
+
 // 從檔案路徑匯入圖片到 DB，回傳圖片 ID（檔案不存在則回傳 null）
 async function importImage(filePath, filename) {
   if (!fs.existsSync(filePath)) return null;
@@ -14,6 +21,18 @@ async function importImage(filePath, filename) {
     data: { filename, mimeType, data: fs.readFileSync(filePath) },
   });
   return img.id;
+}
+
+// 統一的區塊 upsert，content 可以是物件或 async 函式（用於需要先匯入圖片的區塊）
+async function upsertSection(section, contentOrFn) {
+  const existing = await prisma.sectionContent.findUnique({ where: { section } });
+  if (existing) {
+    console.log(`[Seed] 區塊 "${section}" 已存在，跳過`);
+    return;
+  }
+  const content = typeof contentOrFn === 'function' ? await contentOrFn() : contentOrFn;
+  await prisma.sectionContent.create({ data: { section, content } });
+  console.log(`[Seed] 區塊 "${section}" 已建立`);
 }
 
 async function main() {
@@ -54,71 +73,53 @@ async function main() {
     ? '/app/frontend/scraped'
     : path.join(__dirname, '../../frontend/scraped');
 
-  // Hero section — 先檢查存在再匯入圖片，避免建立孤立圖片記錄
-  const heroExists = await prisma.sectionContent.findUnique({ where: { section: 'hero' } });
-  if (!heroExists) {
-    const heroBgImageId = await importImage(
+  // Hero section
+  await upsertSection('hero', async () => {
+    const bgImageId = await importImage(
       path.join(scrapedBase, '01_網站首頁/images/image_005.jpg'), 'hero_bg.jpg'
     );
-    await prisma.sectionContent.create({
-      data: {
-        section: 'hero',
-        content: {
-          label: 'Law Office',
-          title: '劉鈞豪 律師事務所',
-          tagline: '專業法律服務 · SINCE 2018',
-          ctaText: '聯絡律師 →',
-          bgImageId: heroBgImageId,
-          bgImage: 'scraped/01_網站首頁/images/image_005.jpg',
-        },
-      },
-    });
-    console.log('[Seed] 區塊 "hero" 已建立');
-  } else {
-    console.log('[Seed] 區塊 "hero" 已存在，跳過');
-  }
+    return {
+      label: 'Law Office',
+      title: '劉鈞豪 律師事務所',
+      tagline: '專業法律服務 · SINCE 2018',
+      ctaText: '聯絡律師 →',
+      bgImageId,
+      bgImage: 'scraped/01_網站首頁/images/image_005.jpg',
+    };
+  });
 
-  // About section — 先檢查存在再匯入圖片
-  const aboutExists = await prisma.sectionContent.findUnique({ where: { section: 'about' } });
-  if (!aboutExists) {
-    const aboutPhotoImageId = await importImage(
+  // About section
+  await upsertSection('about', async () => {
+    const photoImageId = await importImage(
       path.join(scrapedBase, '02_關於律師/images/image_001.jpg'), 'about_photo.jpg'
     );
-    await prisma.sectionContent.create({
-      data: {
-        section: 'about',
-        content: {
-          name: '劉鈞豪',
-          position: '主持律師 · Director',
-          photoImageId: aboutPhotoImageId,
-          photo: 'scraped/02_關於律師/images/image_001.jpg',
-          paragraphs: [
-            '成立於民國107年，承辦民事、刑事執行案件，協助企業進行商業事件、勞資事件之處理。',
-            '並受聘擔任多家企業法律顧問，提供即時法律服務，同時受邀擔任消費者保護法、生活法律講座、企業法律風險管理、校園法律教育及長照人員培訓等課程之講師。',
-            '致力於研究法學專業，永續經營及創造價值之態度，以專業服務客戶。',
-          ],
-          tags: ['民事糾紛', '家事案件', '刑事案件', '智慧財產', '民事執行', '勞資爭議', '消費爭議', '保險爭議', '信託法務', '碳法事務'],
-          education: [
-            '逢甲大學 財經法律研究所 碩士',
-            '銘傳大學 財金法律學系 學士',
-            '律師高考及格',
-            '勞資事務師',
-          ],
-          experience: [
-            '全國律師聯合會 會員代表',
-            '全國律師聯合會 信託委員會委員',
-            '彰化律師公會 理事',
-            '彰化律師公會 秘書長',
-            '台中律師公會 副秘書長',
-            '111、112 經濟部中小企業處榮譽律師',
-          ],
-        },
-      },
-    });
-    console.log('[Seed] 區塊 "about" 已建立');
-  } else {
-    console.log('[Seed] 區塊 "about" 已存在，跳過');
-  }
+    return {
+      name: '劉鈞豪',
+      position: '主持律師 · Director',
+      photoImageId,
+      photo: 'scraped/02_關於律師/images/image_001.jpg',
+      paragraphs: [
+        '成立於民國107年，承辦民事、刑事執行案件，協助企業進行商業事件、勞資事件之處理。',
+        '並受聘擔任多家企業法律顧問，提供即時法律服務，同時受邀擔任消費者保護法、生活法律講座、企業法律風險管理、校園法律教育及長照人員培訓等課程之講師。',
+        '致力於研究法學專業，永續經營及創造價值之態度，以專業服務客戶。',
+      ],
+      tags: ['民事糾紛', '家事案件', '刑事案件', '智慧財產', '民事執行', '勞資爭議', '消費爭議', '保險爭議', '信託法務', '碳法事務'],
+      education: [
+        '逢甲大學 財經法律研究所 碩士',
+        '銘傳大學 財金法律學系 學士',
+        '律師高考及格',
+        '勞資事務師',
+      ],
+      experience: [
+        '全國律師聯合會 會員代表',
+        '全國律師聯合會 信託委員會委員',
+        '彰化律師公會 理事',
+        '彰化律師公會 秘書長',
+        '台中律師公會 副秘書長',
+        '111、112 經濟部中小企業處榮譽律師',
+      ],
+    };
+  });
 
   // Services section
   await upsertSection('services', {
@@ -151,46 +152,37 @@ async function main() {
     note: '以上收費僅供參考，實際報價仍應視委任內容之情況而定',
   });
 
-  // News section — 先檢查存在再匯入圖片
-  const newsExists = await prisma.sectionContent.findUnique({ where: { section: 'news' } });
-  if (!newsExists) {
-    const newsPhotoImageId = await importImage(
+  // News section
+  await upsertSection('news', async () => {
+    const photoImageId = await importImage(
       path.join(scrapedBase, '06_律師動態/images/image_001.jpg'), 'news_photo.jpg'
     );
-    await prisma.sectionContent.create({
-      data: {
-        section: 'news',
-        content: {
-          photoImageId: newsPhotoImageId,
-          photo: 'scraped/06_律師動態/images/image_001.jpg',
-          title: '現任職務與榮譽',
-          items: [
-            '社團法人台中律師公會 副秘書長',
-            '社團法人彰化律師公會 理事',
-            '全國律師聯合會 會員代表',
-            '111 經濟部中小企業處 榮譽律師',
-            '112 經濟部中小企業處 榮譽律師',
-            '海洋公務人員福利委員會 法律顧問',
-          ],
-          socialLinks: {
-            linkedin: { url: '#', iconId: null },
-            instagram: { url: '#', iconId: null },
-            line: { url: '#', iconId: null },
-            facebook: { url: '#', iconId: null },
-          },
-        },
+    return {
+      photoImageId,
+      photo: 'scraped/06_律師動態/images/image_001.jpg',
+      title: '現任職務與榮譽',
+      items: [
+        '社團法人台中律師公會 副秘書長',
+        '社團法人彰化律師公會 理事',
+        '全國律師聯合會 會員代表',
+        '111 經濟部中小企業處 榮譽律師',
+        '112 經濟部中小企業處 榮譽律師',
+        '海洋公務人員福利委員會 法律顧問',
+      ],
+      socialLinks: {
+        linkedin: { url: '#', iconId: null },
+        instagram: { url: '#', iconId: null },
+        line: { url: '#', iconId: null },
+        facebook: { url: '#', iconId: null },
       },
-    });
-    console.log('[Seed] 區塊 "news" 已建立');
-  } else {
-    console.log('[Seed] 區塊 "news" 已存在，跳過');
-  }
+    };
+  });
 
   // Contact section
   await upsertSection('contact', {
-    address: '403 台中市西區市府路 1-1 號',
-    phone: '04-22220093',
-    email: 'info@mysite.com',
+    address: FIRM_INFO.address,
+    phone: FIRM_INFO.phone,
+    email: FIRM_INFO.email,
     mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3640.5!2d120.674!3d24.148!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z5Y-w5Lit5biC6KW_5Y2A5biC5bqc6LevMS0x6Jmf!5e0!3m2!1szh-TW!2stw!4v1',
   });
 
@@ -198,8 +190,8 @@ async function main() {
   await upsertSection('footer', {
     firmName: '劉鈞豪律師事務所',
     since: 'SINCE 2018',
-    address: '403 台中市西區市府路 1-1 號',
-    phone: '04-22220093',
+    address: FIRM_INFO.address,
+    phone: FIRM_INFO.phone,
     copyright: '© 2023-2025 by 劉鈞豪律師事務所 Copyright',
     institutions: [
       { name: '司法院', url: 'https://www.judicial.gov.tw' },
@@ -243,8 +235,8 @@ async function main() {
       image: 'https://www.liulawoffice.com/asset/favicon.png',
       description: '劉鈞豪律師事務所位於台中市西區，自2018年起提供民事、刑事、行政訴訟及企業法律顧問服務。',
       foundingDate: '2018',
-      telephone: '04-22220093',
-      email: 'info@mysite.com',
+      telephone: FIRM_INFO.phone,
+      email: FIRM_INFO.email,
       address: {
         '@type': 'PostalAddress',
         streetAddress: '市府路 1-1 號',
@@ -362,16 +354,6 @@ async function main() {
   }
 
   console.log('[Seed] 完成');
-}
-
-async function upsertSection(section, content) {
-  const existing = await prisma.sectionContent.findUnique({ where: { section } });
-  if (existing) {
-    console.log(`[Seed] 區塊 "${section}" 已存在，跳過`);
-    return;
-  }
-  await prisma.sectionContent.create({ data: { section, content } });
-  console.log(`[Seed] 區塊 "${section}" 已建立`);
 }
 
 main()

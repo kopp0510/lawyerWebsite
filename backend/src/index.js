@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('./lib/prisma');
+const asyncHandler = require('./lib/asyncHandler');
 
 const authRoutes = require('./routes/auth');
 const contentRoutes = require('./routes/content');
@@ -10,7 +11,6 @@ const contactRoutes = require('./routes/contact');
 const authMiddleware = require('./middleware/auth');
 
 const app = express();
-const prisma = new PrismaClient();
 
 app.set('trust proxy', true);
 app.use(cors());
@@ -24,13 +24,13 @@ app.use('/api/images', imagesRoutes);
 app.use('/api/contact', contactRoutes);
 
 // 全站設定
-app.get('/api/settings', async (req, res) => {
+app.get('/api/settings', asyncHandler(async (req, res) => {
   let settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
   if (!settings) settings = await prisma.siteSettings.create({ data: {} });
   res.json(settings);
-});
+}));
 
-app.put('/api/settings', authMiddleware, async (req, res) => {
+app.put('/api/settings', authMiddleware, asyncHandler(async (req, res) => {
   const { carouselDisplayCount } = req.body;
   const settings = await prisma.siteSettings.upsert({
     where: { id: 1 },
@@ -38,7 +38,7 @@ app.put('/api/settings', authMiddleware, async (req, res) => {
     create: { carouselDisplayCount },
   });
   res.json(settings);
-});
+}));
 
 // 健康檢查
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
